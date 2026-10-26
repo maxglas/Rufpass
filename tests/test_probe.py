@@ -1,6 +1,7 @@
 import contextlib
 import io
 import unittest
+from datetime import date
 from unittest.mock import Mock
 from xml.etree import ElementTree as ET
 
@@ -64,6 +65,8 @@ class ProbeTests(unittest.TestCase):
         self.assertEqual(self.connection.call_action.call_count, 3)
         self.assertEqual(self.created.find("telephony/number").get("type"), "work")
         self.assertIn("bleibt gespeichert", self.output.getvalue())
+        self.assertRegex(self.created.findtext("person/realName"),
+                         rf"^Rufpass Schreibtest {date.today().isoformat()} [0-9a-f]{{32}}$")
         self.assertNotIn(self.expected_number, self.output.getvalue())
 
     def test_keep_requires_external_number_before_any_router_operation(self):

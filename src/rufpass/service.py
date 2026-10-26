@@ -10,6 +10,7 @@ import sqlite3
 import threading
 import time
 import uuid
+from datetime import datetime
 from pathlib import Path
 
 from fritzconnection import FritzMonitor
@@ -76,7 +77,7 @@ class Store:
             self.db.execute("""INSERT INTO grants VALUES (?, ?, ?, ?, NULL, 1)
                 ON CONFLICT(number) DO UPDATE SET last_dial=excluded.last_dial,
                     expires=excluded.expires, dirty=1""",
-                (number, "Rufpass automatisch " + uuid.uuid4().hex, now, now + ttl_days * 86400))
+                (number, f"Rufpass automatisch {datetime.fromtimestamp(now):%Y-%m-%d} {uuid.uuid4().hex}", now, now + ttl_days * 86400))
 
     def rows(self):
         return self.db.execute("SELECT * FROM grants ORDER BY expires, last_dial").fetchall()

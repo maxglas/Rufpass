@@ -30,7 +30,7 @@ sudo bash scripts/install.sh
 
 Die Ersteinrichtung fragt Host, Benutzer, Telefonbuchname und -ID, Landes-/Ortsvorwahl,
 Gültigkeit und Kennwort im lokalen Terminal ab. Voreingestellt sind Telefonbuch
-**Rufpass**, ID **1**, Benutzer **rufpass** und **30 Tage** Gültigkeit.
+**Rufpass**, ID **1**, Benutzer **rufpass** und **365 Tage** Gültigkeit.
 
 Der Installer prüft die Schnittstellen und startet den systemd-Dienst. Er installiert
 Python-Pakete in einer eigenen Umgebung und führt Rufpass unter einem eigenen
@@ -43,9 +43,10 @@ Details: [Betrieb auf Ubuntu](docs/operations.md).
 
 1. **Du rufst jemanden an.** Rufpass erkennt den Wählbeginn, auch wenn niemand abnimmt.
 2. **Eine Freigabe wird angelegt.** Neue Nummern erscheinen als normale Kontakte im
-   zusätzlichen Telefonbuch. Bereits bekannte Nummern werden nicht zusätzlich angelegt.
+   zusätzlichen Telefonbuch, mit Datum im Namen: `Rufpass automatisch 2026-10-26 …`.
+   Bereits bekannte Nummern werden nicht zusätzlich angelegt.
 3. **Der Rückruf darf klingeln.** Die FRITZ!Box übernimmt weiterhin die Rufbehandlung.
-4. **Die Freigabe läuft ab.** Standardmäßig nach 30 Tagen seit dem letzten eigenen
+4. **Die Freigabe läuft ab.** Standardmäßig nach 365 Tagen seit dem letzten eigenen
    Wählversuch. Erneutes Wählen verlängert sie ohne doppelten Eintrag.
 
 ```mermaid
@@ -64,7 +65,7 @@ zum gespeicherten Rufpass-Eintrag passen. Manuell veränderte Kontakte bleiben e
 
 ## Stand und Kompatibilität
 
-**Version 0.2.0:** Automatische Freigaben, Ablaufverwaltung, Wiederanlauf und
+**Version 0.2.1:** Automatische Freigaben, Ablaufverwaltung, Wiederanlauf und
 Ubuntu-Installer sind implementiert und mit simulierten Schnittstellen getestet.
 Der vollständige Dauerbetrieb am Gerät ist noch zu bestätigen.
 

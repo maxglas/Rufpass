@@ -16,7 +16,7 @@ Telefonbuch, Landes-/Ortsvorwahl und Gültigkeit abgefragt. Das Kennwort wird ve
 eingegeben. Alle Zugangsdaten bleiben auf dem Server.
 
 Voreinstellung: `fritz.box`, Benutzer `rufpass`, Buch `Rufpass`, ID 1,
-Landesvorwahl 49 und 30 Tage Gültigkeit. Die Ortsvorwahl muss zur überwachten
+Landesvorwahl 49 und 365 Tage Gültigkeit. Die Ortsvorwahl muss zur überwachten
 FRITZ!Box passen, damit lokale Wählziele korrekt zugeordnet werden.
 
 Der Installer erzeugt eine neue Python-Umgebung unter `/opt/rufpass/releases/`,
@@ -38,8 +38,11 @@ sudo journalctl -u rufpass -n 30 --no-pager
 ```
 
 Nach einem eigenen Wählversuch zu einer noch unbekannten normalen Nummer erscheint
-ein Kontakt `Rufpass automatisch <Kennung>` im zusätzlichen Telefonbuch. Weder
-Gesprächsannahme noch eine bestimmte Gesprächsdauer sind erforderlich.
+ein Kontakt `Rufpass automatisch JJJJ-MM-TT <Kennung>` im zusätzlichen Telefonbuch. Weder
+Gesprächsannahme noch eine bestimmte Gesprächsdauer sind erforderlich. Das Datum
+bezeichnet den ersten erfassten Wählversuch dieser Freigabe in der lokalen Zeitzone
+des Servers. Bei erneutem Wählen bleibt dieses Datum erhalten; die Gültigkeit wird
+ab dem neuen Wählversuch verlängert. Bestehende Einträge ohne Datum behalten ihren Namen.
 
 Wichtig: Bereits vorhandene Kontakte, auch `Rufpass Schreibtest …` aus `probe --keep`,
 werden nicht zusätzlich angelegt oder mit einem Ablaufdatum versehen. Für einen
@@ -66,7 +69,8 @@ sudoedit /etc/rufpass/config.toml
 sudo systemctl restart rufpass
 ```
 
-`ttl_days` kann zwischen 1 und 365 liegen. Eine Änderung wirkt beim nächsten eigenen
+`ttl_days` ist standardmäßig 365 und kann zwischen 1 und 365 liegen. Bereits
+gespeicherte Konfigurationen behalten ihren Wert; für ein Jahr dort `ttl_days = 365` setzen. Eine Änderung wirkt beim nächsten eigenen
 Wählversuch auf die betreffende Freigabe; vorhandene Ablaufzeiten werden nicht
 pauschal umgeschrieben. Die Ortsvorwahl steht in `area_code` ohne führende 0, die
 Landesvorwahl in `country_code` ohne `+` oder `00`.

@@ -9,6 +9,7 @@ import re
 import sys
 import warnings
 import uuid
+from datetime import date
 from importlib.metadata import version
 from xml.etree import ElementTree as ET
 
@@ -130,7 +131,7 @@ def probe_phonebook(connection, book_id: int, expected_name: str, *, keep: bool 
     info = connection.call_action(service, "GetPhonebook", NewPhonebookID=book_id)
     if info.get("NewPhonebookName") != expected_name:
         raise DiagnosticError("Telefonbuch-ID und Name passen nicht zusammen; keine Änderung vorgenommen.")
-    name = f"Rufpass Schreibtest {uuid.uuid4().hex}"
+    name = f"Rufpass Schreibtest {date.today().isoformat()} {uuid.uuid4().hex}"
     contact = ET.Element("contact")
     ET.SubElement(contact, "category").text = "0"
     ET.SubElement(ET.SubElement(contact, "person"), "realName").text = name

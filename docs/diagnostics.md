@@ -92,7 +92,7 @@ Das folgende Beispiel gilt für ein lokales Buch namens **Rufpass mit ID 1**:
 Das Kennwort wird erneut verdeckt abgefragt. Der Befehl:
 
 1. Prüft ID und Namen des Telefonbuchs; das Standardbuch mit ID 0 ist gesperrt.
-2. Legt einen neuen Kontakt `Rufpass Schreibtest <Zufallskennung>` an.
+2. Legt einen neuen Kontakt `Rufpass Schreibtest JJJJ-MM-TT <Zufallskennung>` an.
 3. Verwendet ausschließlich die interne Rundrufnummer `**9`, ohne sie zu wählen.
 4. Liest den Kontakt über die von der Box gelieferte UID zurück und prüft seine Identität.
 5. Löscht ausschließlich diesen verifizierten Testkontakt und prüft, ob er entfernt ist.
@@ -119,7 +119,7 @@ beispielsweise die eigene Mobilfunknummer. Diese Nummer lokal eingeben; sie wird
 nicht als Kommandozeilenargument benötigt und landet dadurch nicht in der Shell-Historie.
 Danach wird das FRITZ!Box-Kennwort verdeckt abgefragt.
 
-Es entsteht ein normaler Kontakt `Rufpass Schreibtest <Zufallskennung>` mit der
+Es entsteht ein normaler Kontakt `Rufpass Schreibtest JJJJ-MM-TT <Zufallskennung>` mit der
 eingegebenen Nummer. Nach dem Rücklesen bleibt er absichtlich gespeichert.
 Die normale Telefonbuchansicht im Browser anschließend neu laden.
 

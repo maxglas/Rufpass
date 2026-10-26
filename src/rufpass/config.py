@@ -19,7 +19,7 @@ class Config:
     phonebook_name: str
     country_code: str
     area_code: str
-    ttl_days: int = 30
+    ttl_days: int = 365
     database: str = "/var/lib/rufpass/state.sqlite3"
 
     def __post_init__(self):
@@ -63,7 +63,7 @@ def configure(path: str) -> None:
         phonebook_id=int(ask("ID dieses Telefonbuchs", "1")),
         country_code=ask("Landesvorwahl ohne +", "49"),
         area_code=ask("Ortsvorwahl, z. B. 030").removeprefix("0"),
-        ttl_days=int(ask("Gültigkeit in Tagen", "30")),
+        ttl_days=int(ask("Gültigkeit in Tagen", "365")),
     )
     with warnings.catch_warnings():
         warnings.simplefilter("error", getpass.GetPassWarning)

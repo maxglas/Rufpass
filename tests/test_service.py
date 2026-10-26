@@ -4,6 +4,7 @@ import os
 import tempfile
 import unittest
 from dataclasses import replace
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
@@ -16,7 +17,7 @@ from rufpass.service import Engine, Store, normalize_number, instance_lock
 def config(database):
     return Config(host="example.invalid", user="rufpass", password="synthetic-secret",
                   phonebook_id=1, phonebook_name="Rufpass", country_code="49", area_code="30",
-                  database=str(database))
+                  database=str(database), ttl_days=30)
 
 
 def contact(name, number, uid, **attributes):
@@ -103,15 +104,18 @@ class EngineTests(unittest.TestCase):
         self.engine.sync(self.router, self.now)
         self.assertEqual(self.router.created, 1)
         self.assertEqual(self.store.rows()[0]["uid"], 101)
+        name = self.router.contacts[101].findtext("person/realName")
+        expected_date = datetime.fromtimestamp(self.now).date().isoformat()
+        self.assertRegex(name, rf"^Rufpass automatisch {expected_date} [0-9a-f]{{32}}$")
 
     def test_repeated_call_extends_expiry_without_duplicate_or_router_write(self):
         self.create_grant()
         original_marker = self.store.rows()[0]["marker"]
-        self.engine.dial("03000000001", self.now + 100)
-        self.engine.sync(self.router, self.now + 100)
+        self.engine.dial("03000000001", self.now + 2 * 86400)
+        self.engine.sync(self.router, self.now + 2 * 86400)
         row = self.store.rows()[0]
         self.assertEqual(row["marker"], original_marker)
-        self.assertEqual(row["expires"], self.now + 100 + 30 * 86400)
+        self.assertEqual(row["expires"], self.now + 2 * 86400 + 30 * 86400)
         self.assertEqual(self.router.created, 1)
 
     def test_known_personal_contact_is_not_copied_or_modified(self):
@@ -155,6 +159,9 @@ class EngineTests(unittest.TestCase):
         self.engine.sync(self.router, self.now + 1)
         self.assertEqual(self.router.created, 1)
         self.assertEqual(self.store.rows()[0]["uid"], 101)
+        name = self.router.contacts[101].findtext("person/realName")
+        expected_date = datetime.fromtimestamp(self.now).date().isoformat()
+        self.assertRegex(name, rf"^Rufpass automatisch {expected_date} [0-9a-f]{{32}}$")
 
     def test_delete_timeout_is_reconciled_without_deleting_other_contacts(self):
         self.create_grant()
@@ -287,10 +294,23 @@ class ConfigTests(unittest.TestCase):
                 configure(str(path))
             cfg = load_config(str(path))
             self.assertEqual(cfg.area_code, "30")
+            self.assertEqual(cfg.ttl_days, 365)
             self.assertEqual(cfg.password, 'synthetic-"secret\\#')
             self.assertNotIn(cfg.password, repr(cfg))
             with self.assertRaises(ValueError):
                 configure(str(path))
+
+    def test_omitted_ttl_defaults_to_365_and_explicit_value_is_preserved(self):
+        values = vars(config("synthetic.sqlite3")).copy()
+        values.pop("ttl_days")
+        self.assertEqual(Config(**values).ttl_days, 365)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "config.toml"
+            with patch("builtins.input", side_effect=["", "", "", "", "", "030", "30"]), \
+                    patch("rufpass.config.getpass.getpass", return_value="synthetic-secret"), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                configure(str(path))
+            self.assertEqual(load_config(str(path)).ttl_days, 30)
 
     def test_rejects_default_book_and_invalid_expiry_or_area(self):
         for changes in ({"phonebook_id": 0}, {"ttl_days": 0}, {"ttl_days": 366}, {"area_code": "030"}):
