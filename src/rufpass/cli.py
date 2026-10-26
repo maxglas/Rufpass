@@ -9,6 +9,7 @@ import re
 import sys
 import warnings
 import uuid
+from importlib.metadata import version
 from xml.etree import ElementTree as ET
 
 from fritzconnection import FritzConnection, FritzMonitor
@@ -43,7 +44,31 @@ def event_message(event: str, show_numbers: bool = False) -> str | None:
     return None
 
 
-def check_phonebook(connection, name: str) -> tuple[int, int]:
+def phonebook_counts(root: ET.Element, name: str) -> tuple[int, int]:
+    """Count the requested book, separating router-supplied internal contacts."""
+    if root.tag == "phonebook":
+        books = [root]
+    elif root.tag == "phonebooks":
+        books = root.findall("phonebook")
+    else:
+        raise DiagnosticError("Unerwartetes Telefonbuch-XML; keine verlässliche Zählung möglich.")
+    matches = [book for book in books if book.get("name") == name and book.get("owner") != "255"]
+    if len(matches) != 1:
+        raise DiagnosticError("Das heruntergeladene XML enthält das Zielbuch nicht eindeutig unter seinem Namen.")
+    regular = internal = 0
+    for contact in matches[0].findall("contact"):
+        numbers = contact.findall("telephony/number")
+        if numbers and all(node.get("type") == "intern" or (node.text or "").strip().startswith("**")
+                           for node in numbers):
+            internal += 1
+        else:
+            regular += 1
+    # Some exports put generated system contacts in a separate internal book.
+    internal += sum(len(book.findall("contact")) for book in books if book.get("owner") == "255")
+    return regular, internal
+
+
+def check_phonebook(connection, name: str) -> tuple[int, int, int]:
     """Find the book unambiguously and read it without displaying contacts."""
     phonebooks = FritzPhonebook(fc=connection)
     matches = []
@@ -51,14 +76,16 @@ def check_phonebook(connection, name: str) -> tuple[int, int]:
         info = phonebooks.phonebook_info(book_id)
         print(f"Telefonbuch-ID {book_id}: {info['name']!r}")
         if info["name"] == name:
-            matches.append(book_id)
+            matches.append((book_id, info))
     if not matches:
         raise DiagnosticError("Ziel-Telefonbuch nicht gefunden; Namen mit --phonebook exakt angeben.")
     if len(matches) != 1:
         raise DiagnosticError("Telefonbuchname ist nicht eindeutig; vor dem Einsatz eindeutig benennen.")
-    book_id = matches[0]
-    entries = phonebooks.get_all_name_numbers(book_id)
-    return book_id, len(entries)
+    book_id, info = matches[0]
+    with connection.session.get(info["url"], timeout=10) as response:
+        response.raise_for_status()
+        regular, internal = phonebook_counts(ET.fromstring(response.content), name)
+    return book_id, regular, internal
 
 
 def connect(args):
@@ -80,8 +107,9 @@ def connect(args):
 
 
 def run_check(args) -> int:
-    book_id, count = check_phonebook(connect(args), args.phonebook)
-    print(f"OK: Ziel-Telefonbuch lesbar, ID {book_id}, {count} Einträge.")
+    book_id, count, internal = check_phonebook(connect(args), args.phonebook)
+    print(f"OK: Ziel-Telefonbuch lesbar, ID {book_id}, {count} Kontakte.")
+    print(f"Zusätzlich {internal} interne Einträge im XML (keine externen Kontakte).")
     print("Keine Änderungen vorgenommen. Schreibrechte wurden damit noch nicht geprüft.")
     return 0
 
@@ -169,6 +197,7 @@ def run_monitor(args) -> int:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Rufpass: FRITZ!Box-Diagnose und gezielter Schreibtest.")
+    parser.add_argument("--version", action="version", version=f"Rufpass {version('rufpass')}")
     commands = parser.add_subparsers(dest="command", required=True)
     check = commands.add_parser("check", help="Telefonbuchzugriff und Ziel-ID prüfen")
     monitor = commands.add_parser("monitor", help="Ausgehende Wählversuche live erkennen")

@@ -23,3 +23,13 @@ Recherche: 26.10.2026. Keine Validierung an der konkreten FRITZ!Box durchgeführ
   Callmonitor-Hintergrunddienst mit Spamprüfung und optionaler Übernahme öffentlich identifizierbarer Nummern.
 
 Keines dieser Projekte wurde lokal installiert oder für unseren Einsatzzweck getestet.
+
+## Interne Einträge in Telefonbuchdaten
+
+Die [TR-064-Dokumentation](https://fritz.support/resources/TR-064_Contact_SCPD.pdf)
+zeigt auch Kontakte mit `number type="intern"` im Telefonbuch-XML.
+[fbtr64toolbox](https://github.com/MarcusRoeckrath/fbtr64toolbox/blob/main/fbtr64toolbox.txt)
+beschreibt bei `phonebookinfo`, dass zusätzliche interne Nummern zu einer
+Abweichung von der Kontaktzahl der Weboberfläche führen können. Rufpass zählt
+normale Kontakte und interne Einträge deshalb getrennt. Die konkrete Zahl
+der internen Einträge einer Box muss mit `check` bestätigt werden.

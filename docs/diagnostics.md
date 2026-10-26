@@ -38,10 +38,16 @@ angeben; Namen mit Leerzeichen in Anführungszeichen setzen. Wenn `fritz.box` ni
 aufgelöst wird, die LAN-IP der FRITZ!Box hinter `--host` angeben.
 
 Das Kennwort wird verdeckt im Terminal abgefragt, nicht als Kommandozeilenargument.
-Die Ausgabe enthält Telefonbuchnamen und IDs sowie die Anzahl der Einträge im
-Zielbuch. Sie enthält keine Kontaktnamen oder Telefonnummern.
+Die Ausgabe enthält Telefonbuchnamen und IDs sowie die Anzahl der normalen Kontakte
+im Zielbuch. Interne Einträge der FRITZ!Box werden getrennt ausgewiesen.
+Sie enthält keine Kontaktnamen oder Telefonnummern.
 
-Erwarteter Abschluss: `OK: Ziel-Telefonbuch lesbar, ID …, … Einträge.`
+Erwarteter Abschluss: `OK: Ziel-Telefonbuch lesbar, ID …, … Kontakte.`
+Darunter steht die Anzahl zusätzlicher interner Einträge im XML. Die Schnittstelle
+kann interne Geräte- oder Rundrufnummern liefern, die in der normalen Kontaktansicht
+nicht erscheinen. Ein leeres Buch kann daher 0 Kontakte und dennoch interne Einträge enthalten.
+Die frühere Diagnose zählte beides ungetrennt als Einträge; das war irreführend.
+Das heruntergeladene XML wird zusätzlich auf den erwarteten Telefonbuchnamen geprüft.
 Dieser Test bestätigt **Leserechte**, noch keine Schreibrechte oder lokale Buchart.
 
 ## 2. Wählversuch ohne Annahme prüfen
@@ -97,6 +103,18 @@ Bestehende Kontakte werden nicht bearbeitet. Bei Abbruch oder unklarer Antwort
 wird das Anlegen nicht automatisch wiederholt. Ein Testkontakt kann dann zurückbleiben;
 sein eindeutiger Name steht in der Ausgabe. Falls vorhanden, ausschließlich diesen
 Kontakt im Zielbuch manuell entfernen. Es gibt keine pauschale Lösch- oder Wiederherstellungsfunktion.
+
+## Welcher Befehl legt einen Kontakt an?
+
+| Befehl | Verhalten |
+| --- | --- |
+| `check` | Liest und zählt Kontakte; keine Änderungen. |
+| `monitor` | Zeigt Wählversuche an; legt keine Freigaben an. |
+| `probe` | Legt einen temporären Testkontakt an und entfernt ihn wieder. |
+
+Auch nach einem erfolgreichen `probe` ist das Zielbuch wieder leer, wenn es vorher
+leer war. Automatische Rückruf-Freigaben sind in dieser Version noch nicht verfügbar.
+Die installierte Paketversion lässt sich mit `.venv/bin/rufpass --version` prüfen.
 
 ## Fehler und nächste Schritte
 

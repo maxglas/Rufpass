@@ -2,9 +2,10 @@ import contextlib
 import io
 import queue
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-from rufpass.cli import DiagnosticError, check_phonebook, event_message, main, outgoing_number
+from rufpass.cli import DiagnosticError, check_phonebook, event_message, main, outgoing_number, phonebook_counts
+from xml.etree import ElementTree as ET
 
 
 # Synthetic examples only; never use real call records in fixtures.
@@ -40,12 +41,16 @@ class PhonebookTests(unittest.TestCase):
     def test_reads_only_selected_book_and_hides_contacts(self, phonebook_class):
         books = phonebook_class.return_value
         books.phonebook_ids = [0, 7]
-        books.phonebook_info.side_effect = [{"name": "Kontakte"}, {"name": "Rufpass"}]
-        books.get_all_name_numbers.return_value = [("Privater Name", ["03000000001"])]
+        books.phonebook_info.side_effect = [{"name": "Kontakte"},
+                                           {"name": "Rufpass", "url": "http://example.invalid/book7"}]
+        connection = MagicMock()
+        response = connection.session.get.return_value.__enter__.return_value
+        response.content = b'<phonebook name="Rufpass"><contact><person><realName>Privater Name</realName></person><telephony><number>03000000001</number></telephony></contact></phonebook>'
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
-            self.assertEqual(check_phonebook(object(), "Rufpass"), (7, 1))
-        books.get_all_name_numbers.assert_called_once_with(7)
+            self.assertEqual(check_phonebook(connection, "Rufpass"), (7, 1, 0))
+        connection.session.get.assert_called_once_with("http://example.invalid/book7", timeout=10)
+        response.raise_for_status.assert_called_once()
         self.assertNotIn("Privater Name", output.getvalue())
         self.assertNotIn("03000000001", output.getvalue())
 
@@ -58,6 +63,34 @@ class PhonebookTests(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()), self.assertRaises(DiagnosticError):
                 check_phonebook(object(), "Rufpass")
         books.get_all_name_numbers.assert_not_called()
+
+    def test_empty_visible_book_with_twelve_generated_internal_contacts(self):
+        root = ET.Element("phonebook", name="Rufpass", owner="0")
+        for number in range(12):
+            contact = ET.SubElement(root, "contact")
+            ET.SubElement(ET.SubElement(contact, "telephony"), "number", type="intern").text = f"**{600 + number}"
+        self.assertEqual(phonebook_counts(root, "Rufpass"), (0, 12))
+
+    def test_multiple_books_do_not_mix_personal_contacts_into_target_count(self):
+        root = ET.fromstring('''<phonebooks>
+          <phonebook name="Telefonbuch"><contact/><contact/><contact/></phonebook>
+          <phonebook name="Rufpass"><contact><telephony><number>03000000001</number></telephony></contact></phonebook>
+          <phonebook owner="255"><contact/><contact/></phonebook>
+        </phonebooks>''')
+        self.assertEqual(phonebook_counts(root, "Rufpass"), (1, 2))
+
+    def test_internal_number_without_type_is_excluded_but_mixed_contact_is_counted(self):
+        root = ET.fromstring('''<phonebook name="Rufpass">
+          <contact><telephony><number>**9</number></telephony></contact>
+          <contact><telephony><number>**610</number><number>03000000001</number></telephony></contact>
+        </phonebook>''')
+        self.assertEqual(phonebook_counts(root, "Rufpass"), (1, 1))
+
+    def test_wrong_ambiguous_and_unexpected_xml_are_not_reported_as_empty_target_book(self):
+        for xml in ('<phonebook name="Anderes Buch"/>', '<html/>',
+                    '<phonebooks><phonebook name="Rufpass"/><phonebook name="Rufpass"/></phonebooks>'):
+            with self.subTest(xml=xml), self.assertRaises(DiagnosticError):
+                phonebook_counts(ET.fromstring(xml), "Rufpass")
 
 
 class CommandTests(unittest.TestCase):
