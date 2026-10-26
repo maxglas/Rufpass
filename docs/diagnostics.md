@@ -2,8 +2,8 @@
 
 `check` prüft den lesenden Telefonbuchzugriff und `monitor` die Live-Wählereignisse.
 Beide Befehle verändern keine Einträge. Der getrennte Befehl `probe` führt einen
-kontrollierten Schreibtest mit einem temporären Testkontakt durch. Automatische
-Freigaben und ein Dienst für den Dauerbetrieb sind noch nicht implementiert.
+kontrollierten Schreibtest durch. Der neue automatische Dienst wird nach der
+[Betriebsanleitung](operations.md) installiert. Diese Diagnosebefehle bleiben getrennt davon.
 
 ## Installation
 
@@ -143,7 +143,7 @@ nicht als Sichttest eignen. `monitor` bleibt weiterhin rein lesend.
 | `probe` | Legt einen temporären Testkontakt an und entfernt ihn wieder. |
 | `probe --keep` | Lässt einen Testkontakt mit der lokal eingegebenen externen Nummer gespeichert. |
 
-Nach `probe` ohne `--keep` ist das Zielbuch wieder leer, wenn es vorher leer war. Automatische Rückruf-Freigaben sind in dieser Version noch nicht verfügbar.
+Nach `probe` ohne `--keep` ist das Zielbuch wieder leer, wenn es vorher leer war. Automatische Rückruf-Freigaben führt der neue Befehl `run` aus; siehe [Betrieb](operations.md).
 Die installierte Paketversion lässt sich mit `.venv/bin/rufpass --version` prüfen.
 
 ## Fehler und nächste Schritte

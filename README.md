@@ -2,9 +2,9 @@
 
 **Wer von dir angerufen wird, darf zurückrufen.**
 
-Rufpass soll selbst gewählte Telefonnummern automatisch für Rückrufe an der
-FRITZ!Box freigeben. Für alle anderen unbekannten Nummern bleibt die bestehende
-Sperrregel aktiv.
+Rufpass erkennt selbst gewählte Telefonnummern an der FRITZ!Box und trägt sie für
+eine begrenzte Zeit in ein zusätzliches Telefonbuch ein. Mit der vorhandenen
+Sperrregel „Nicht im Telefonbuch“ dürfen diese Nummern zurückrufen.
 
 ## Warum Rufpass?
 
@@ -12,107 +12,105 @@ Nur Anrufe aus dem Telefonbuch zuzulassen bringt Ruhe vor Werbeanrufen. Es verhi
 aber auch erwünschte Rückrufe: Du rufst eine Werkstatt, Arztpraxis oder einen neuen
 Kontakt an, erreichst niemanden und der spätere Rückruf wird blockiert.
 
-Rufpass soll diese Lücke schließen, ohne dass jede selbst gewählte Nummer dauerhaft
-in deinem persönlichen Telefonbuch landen muss.
+Rufpass ergänzt deine vorhandene Positivliste automatisch. Persönliche Kontakte
+bleiben erhalten und müssen nicht durch vorübergehende Kontakte ergänzt werden.
 
-> **Entwicklungsstand: erste Diagnoseversion.** `rufpass check` prüft den lesenden
-> Telefonbuchzugriff; `rufpass monitor` erkennt ausgehende Wählversuche. `rufpass probe`
-> prüft das Anlegen und Entfernen eines temporären Testkontakts. Automatische
-> Freigaben und ein dauerhaft installierter Dienst sind noch nicht implementiert.
-> Das Durchstellen einer Nummer aus einem zweiten lokalen Telefonbuch wurde auf
-> einer FRITZ!Box 7690 mit FRITZ!OS 8.25 manuell bestätigt.
+## Installation auf Ubuntu
 
-## Diagnose ausprobieren
+Voraussetzungen: Ubuntu mit Python **3.12 oder neuer**, ein zusätzliches lokales
+Telefonbuch, ein FRITZ!Box-Benutzer mit Telefonie-Rechten sowie aktivierter
+Callmonitor (`#96*5*`) und Zugriff für Anwendungen (TR-064).
 
-Die [Ubuntu-Anleitung](docs/diagnostics.md) führt durch Installation,
-Telefonbuchprüfung und einen Testanruf ohne Gesprächsannahme. Benötigt wird Python 3.12
-oder neuer. `check` und `monitor` bleiben lesend; der getrennte Befehl `probe`
-legt einen markierten Testkontakt an und entfernt ihn anschließend wieder.
+In einem vorhandenen Checkout:
 
-## So soll es funktionieren
+```bash
+git pull --ff-only
+sudo bash scripts/install.sh
+```
 
-1. **Du rufst jemanden an.** Rufpass erkennt bereits den Wählversuch, auch wenn niemand abnimmt.
-2. **Die Nummer bekommt einen Rufpass.** Der Dienst speichert sie in einem separaten
-   lokalen FRITZ!Box-Telefonbuch für Rückruf-Freigaben.
+Die Ersteinrichtung fragt Host, Benutzer, Telefonbuchname und -ID, Landes-/Ortsvorwahl,
+Gültigkeit und Kennwort im lokalen Terminal ab. Voreingestellt sind Telefonbuch
+**Rufpass**, ID **1**, Benutzer **rufpass** und **30 Tage** Gültigkeit.
+
+Der Installer prüft die Schnittstellen und startet den systemd-Dienst. Er installiert
+Python-Pakete in einer eigenen Umgebung und führt Rufpass unter einem eigenen
+Systembenutzer aus. Updates erfolgen mit denselben zwei Befehlen; Konfiguration
+und Freigabedaten bleiben erhalten.
+
+Details: [Betrieb auf Ubuntu](docs/operations.md).
+
+## So funktioniert es
+
+1. **Du rufst jemanden an.** Rufpass erkennt den Wählbeginn, auch wenn niemand abnimmt.
+2. **Eine Freigabe wird angelegt.** Neue Nummern erscheinen als normale Kontakte im
+   zusätzlichen Telefonbuch. Bereits bekannte Nummern werden nicht zusätzlich angelegt.
 3. **Der Rückruf darf klingeln.** Die FRITZ!Box übernimmt weiterhin die Rufbehandlung.
-4. **Die Freigabe läuft wieder ab.** Geplant sind zeitlich begrenzte Einträge;
-   30 Tage sind der erste Entwurf. Erneutes Wählen verlängert die Freigabe.
-
-Persönliche Kontakte sollen unverändert bleiben. Rufpass soll ausschließlich die
-eigenen automatisch angelegten Einträge verwalten.
+4. **Die Freigabe läuft ab.** Standardmäßig nach 30 Tagen seit dem letzten eigenen
+   Wählversuch. Erneutes Wählen verlängert sie ohne doppelten Eintrag.
 
 ```mermaid
 flowchart LR
     A[Eigener Wählversuch] --> B[FRITZ!Box Callmonitor]
     B --> C[Rufpass im Heimnetz]
+    C --> S[(Lokaler Zustand)]
     C -->|TR-064| D[Telefonbuch für Rückruf-Freigaben]
     D --> E[FRITZ!Box erlaubt Rückruf]
 ```
 
-## Technischer Ansatz
+Rufpass speichert Wählversuche vor Telefonbuchänderungen in SQLite. Nach Fehlern
+gleicht der Dienst seine Kennungen mit dem Telefonbuch ab, bevor er neue Einträge
+anlegt. Abgelaufene Kontakte werden nur gelöscht, wenn sie weiterhin eindeutig
+zum gespeicherten Rufpass-Eintrag passen. Manuell veränderte Kontakte bleiben erhalten.
 
-Ein kleiner Python-Hintergrunddienst soll auf einem dauerhaft laufenden Rechner im
-Heimnetz arbeiten. Der Callmonitor der FRITZ!Box meldet Wählversuche über TCP-Port
-1012. Die authentifizierte TR-064-Schnittstelle dient zur Verwaltung des zusätzlichen
-Telefonbuchs. SQLite speichert Freigaben und Ablaufzeiten lokal.
+## Stand und Kompatibilität
 
-Für den Betrieb sind Docker Compose oder unter Linux systemd vorgesehen. Ein
-Cloud-Dienst, MQTT-Broker oder Reverse Proxy ist für die Kernfunktion nicht erforderlich.
+**Version 0.2.0:** Automatische Freigaben, Ablaufverwaltung, Wiederanlauf und
+Ubuntu-Installer sind implementiert und mit simulierten Schnittstellen getestet.
+Der vollständige Dauerbetrieb am Gerät ist noch zu bestätigen.
 
-## Voraussetzungen und Kompatibilität
+Am Gerät bestätigt: FRITZ!Box **7690**, FRITZ!OS **8.25**, Ubuntu **24.04.4 LTS**,
+Python **3.12.3**. Geprüft wurden das Durchstellen von Nummern aus dem zweiten Buch,
+Telefonbuchzugriff, Live-Wählereignisse sowie Anlegen, Rücklesen, Entfernen und
+sichtbares Behalten eines Testkontakts. Andere Modelle sind nicht getestet.
 
-- Eine FRITZ!Box mit Telefoniefunktion, Callmonitor und passenden TR-064-Aktionen.
-- Eine bestehende Sperrregel für Anrufer ohne Telefonbucheintrag.
-- Ein zusätzliches **lokales** Telefonbuch sowie ein Benutzer mit Telefonie-Rechten.
-- Ein dauerhaft laufender Rechner mit Netzwerkzugriff auf die FRITZ!Box.
+Die automatische Nummernaufbereitung ist zunächst auf deutsche Anschlüsse mit
+konfigurierter Ortsvorwahl ausgerichtet; internationale Nummern werden mit `+`
+oder `00` erkannt. Interne Nummern, Steuercodes, kurze Dienstnummern und ausgewählte
+deutsche Sonderrufnummern werden übersprungen. Eine weltweite Rufnummernvalidierung
+ist nicht enthalten. Windows-Dienst, Docker-Paket und Weboberfläche gehören nicht
+zu dieser Version.
 
-**Erstes vorgesehenes Testgerät:** FRITZ!Box 7690 mit FRITZ!OS 8.25.
-Manuell bestätigt ist das Durchstellen von Nummern aus einem zweiten lokalen Telefonbuch.
-Gemeldete Zielumgebung: Ubuntu 24.04.4 LTS mit Python 3.12.3.
-Lesender Telefonbuchzugriff und Live-Erkennung eines Wählversuchs wurden dort ebenfalls
-bestätigt. Anlegen, Rücklesen und Entfernen eines temporären Testkontakts wurden ebenfalls
-erfolgreich am Gerät geprüft. Der Sichttest mit `probe --keep` und die automatische
-Telefonbuchpflege sind noch nicht am Gerät geprüft;
-weitere Modelle sind nicht getestet.
+## Rechte, Daten und Grenzen
 
-## Rechte und Grenzen
+- Ein FRITZ!Box-Benutzer benötigt Telefonie-Rechte. Diese lassen sich an der Box
+  nicht auf ein einzelnes Telefonbuch begrenzen; Rufpass begrenzt seine Schreibzugriffe selbst.
+- Der Dienst verwaltet nur eigene Einträge im konfigurierten zusätzlichen Buch.
+  Telefonbücher werden niemals komplett ersetzt oder wiederhergestellt.
+- Rufnummern und Ablaufdaten liegen lokal in SQLite; Zugangsdaten in einer Datei,
+  die nur root und der Dienstbenutzer lesen können. Normale Logs enthalten keine Telefonnummern.
+- Erfasst werden nur Telefonate über die überwachte FRITZ!Box. Andere oder unterdrückte
+  Rückrufnummern werden dadurch nicht bekannt. Andere vorhandene Rufsperren gelten weiterhin.
+- Während Rufpass aus ist, verpasste Wählversuche können nicht nachgeholt werden.
+  Bereits gespeicherte Freigaben bleiben bei einem Ausfall bestehen; ihre Bereinigung wartet
+  auf den nächsten erfolgreichen Dienstlauf.
+- Manuelle Kontakte und frühere `probe --keep`-Testkontakte werden nicht nachträglich
+  als automatisch verwaltete Freigaben übernommen.
 
-Ein eigener FRITZ!Box-Benutzer benötigt Telefonie-Rechte (Phone). Diese sind nicht
-auf ein einzelnes Telefonbuch begrenzbar. Die Einschränkung auf die Ziel-Telefonbuch-ID
-soll im Programm umgesetzt werden; sie ersetzt keine Berechtigungsgrenze der Box.
+## Diagnose und Dokumentation
 
-- Erfasst werden ausschließlich Anrufe, die über die überwachte FRITZ!Box laufen.
-- Rückrufe von einer anderen oder unterdrückten Nummer werden nicht freigegeben.
-- Während eines Ausfalls verpasste erfolglose Wählversuche lassen sich nicht
-  zuverlässig aus der normalen Anrufliste nachholen.
-- Bereits angelegte Telefonbucheinträge bleiben bei einem Dienstausfall bestehen.
-- Zugangsdaten und echte Telefonnummern gehören nicht ins Repository oder in Fehlerberichte.
+`check` und `monitor` bleiben rein lesend. Automatische Freigaben führt der neue
+Befehl `run` aus; der Installer richtet diesen als Dienst ein.
 
-## Nächste Schritte
-
-- [x] Durchstellen einer Nummer aus einem zweiten lokalen Telefonbuch manuell bestätigen.
-- [x] Lesende Diagnose und Erkennung ausgehender Wählereignisse mit simulierten Schnittstellen testen.
-- [x] Lesenden Telefonbuchzugriff und Wählereignisse am Callmonitor prüfen.
-- [x] Temporären Schreibtest am Gerät durchführen.
-- [ ] Sichtbaren externen Testkontakt mit `probe --keep` am Gerät prüfen.
-- [ ] Erfassung und Nummernnormalisierung implementieren.
-- [ ] Gezielte Telefonbuchpflege und Ablaufverwaltung implementieren.
-- [ ] Probelauf, automatisierte Tests und Gerätetests durchführen.
-- [ ] Betrieb und Installation dokumentieren.
-
-## Dokumentation und Mitarbeit
-
+- [Betrieb, Konfiguration und Fehlerbehebung](docs/operations.md)
+- [Diagnosebefehle und kontrollierte Schreibtests](docs/diagnostics.md)
+- [Architektur](docs/architecture.md)
 - [Architekturentscheidung: Python](docs/adr-001-python.md)
-- [Architektur und Implementierungsgrenzen](docs/architecture.md)
-- [Diagnose auf Ubuntu installieren und testen](docs/diagnostics.md)
-- [Manueller Vorabtest und nächste Schritte](docs/setup.md)
 - [Recherche und Quellen](docs/research.md)
-- [Mitwirken und Fehler melden](CONTRIBUTING.md)
+- [Mitwirken und Tests](CONTRIBUTING.md)
 
 ## Autor
 
 Ein Projekt von [Maximilian Glas](https://github.com/maxglas).
-
 Rufpass ist ein unabhängiges Projekt und kein offizielles Produkt von FRITZ!.
 
 ## Lizenz

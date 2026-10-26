@@ -1,25 +1,35 @@
 # An Rufpass mitwirken
 
-Rufpass befindet sich in der Konzeptphase. Besonders hilfreich sind derzeit
-reproduzierbare Erkenntnisse zur Rufbehandlung und zu den Telefonie-Schnittstellen.
+Rufpass wird zunächst für Ubuntu und deutsche Rufnummernkonventionen entwickelt.
+Andere Geräte und Plattformen bitte nur als unterstützt dokumentieren, wenn sie
+reproduzierbar getestet wurden.
 
-## Gerätetest dokumentieren
+## Entwicklung und Tests
 
-Bitte Modell, FRITZ!OS-Version, relevante Rufbehandlung und die Schritte des Tests
-angeben. Erwartetes und tatsächliches Verhalten getrennt beschreiben. Das Vorgehen
-für den Test mit zwei Telefonbüchern steht in [docs/setup.md](docs/setup.md).
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -e .
+.venv/bin/python -m unittest discover -s tests -v
+bash -n scripts/install.sh
+```
 
-Nur eigene oder ausdrücklich für den Test freigegebene Telefonnummern verwenden.
-Keine echten Nummern, Telefonbuch-Exporte, Zugangsdaten oder unbereinigten Logs veröffentlichen.
+Tests verwenden synthetische Daten, temporäre SQLite-Dateien und simulierte
+Schnittstellen. Der Linux-Sperrentest wird auf anderen Plattformen übersprungen.
+Der Workflow unter `.github/workflows/tests.yml` führt die Suite unter Linux aus;
+erst ein tatsächlicher Workflow-Lauf bestätigt dessen Ergebnis.
 
-## Änderungen vorschlagen
+Änderungen klein halten und die Folgen für Wiederanlauf, eindeutige Zuordnung und
+manuelle Kontakte prüfen. Niemals Buch-Import oder Buch-Wiederherstellung als
+Abkürzung für Einzeländerungen verwenden.
 
-Den konkreten Anwendungsfall beschreiben. Für Implementierungen den Entwurf in
-[docs/architecture.md](docs/architecture.md) beachten. Kleine Änderungen mit klarer
-Begründung und passenden Tests sind leichter zu prüfen.
+## Fehler melden
 
-Tests nach Installation: `python -m unittest discover -s tests -v`. Sie verwenden
-synthetische Daten und simulierte Schnittstellen. Gerätetests und automatisierte
-Tests ausdrücklich unterscheiden. check/monitor bleiben lesend; probe legt
-einen markierten temporären Testkontakt an und entfernt nur diesen nach Identitätsprüfung.
+Modell, FRITZ!OS-Version, Rufpass-Version, Betriebssystem und reproduzierbare Schritte
+angeben. Erwartetes und tatsächliches Verhalten unterscheiden. Gerätetests und
+simulierte Tests getrennt kennzeichnen.
+
+Keine echten Nummern, Telefonbuch-Exporte, Konfigurationsdateien, Datenbanken,
+Zugangsdaten oder unbereinigten Logs veröffentlichen. Für Tests nur eigene oder
+ausdrücklich dafür freigegebene Rufnummern verwenden.
+
 Die Lizenz für öffentliche Beiträge muss vor der öffentlichen Freigabe festgelegt werden.

@@ -1,4 +1,4 @@
-"""Read-only diagnostics and an explicitly invoked temporary write probe."""
+"""Command-line entry points for the service, diagnostics and controlled write probes."""
 
 import argparse
 import getpass
@@ -216,9 +216,15 @@ def run_monitor(args) -> int:
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description="Rufpass: FRITZ!Box-Diagnose und gezielter Schreibtest.")
+    parser = argparse.ArgumentParser(description="Rufpass: automatische Rückruf-Freigaben und FRITZ!Box-Diagnose.")
     parser.add_argument("--version", action="version", version=f"Rufpass {version('rufpass')}")
     commands = parser.add_subparsers(dest="command", required=True)
+    for name, help_text in (("run", "Automatische Freigaben im Vordergrund betreiben"),
+                            ("configure", "Dienstkonfiguration einmalig interaktiv anlegen"),
+                            ("validate", "Dienstkonfiguration und Schnittstellen lesend prüfen"),
+                            ("status", "Lokalen Zustand ohne Telefonnummern anzeigen")):
+        command = commands.add_parser(name, help=help_text)
+        command.add_argument("--config", default="/etc/rufpass/config.toml")
     check = commands.add_parser("check", help="Telefonbuchzugriff und Ziel-ID prüfen")
     monitor = commands.add_parser("monitor", help="Ausgehende Wählversuche live erkennen")
     probe = commands.add_parser("probe", help="Testkontakt anlegen und prüfen; standardmäßig wieder entfernen")
@@ -239,6 +245,11 @@ def main(argv=None) -> int:
     # Router/library exceptions and debug messages may contain authenticated URLs or numbers.
     logging.getLogger("fritzconnection").setLevel(logging.CRITICAL)
     try:
+        if args.command in ("run", "configure", "validate", "status"):
+            from rufpass.config import configure
+            from rufpass.service import run, validate, status
+            {"run": run, "configure": configure, "validate": validate, "status": status}[args.command](args.config)
+            return 0
         return {"check": run_check, "monitor": run_monitor, "probe": run_probe}[args.command](args)
     except KeyboardInterrupt:
         print("\nDiagnose beendet.")
@@ -251,6 +262,9 @@ def main(argv=None) -> int:
         print("Host, Erreichbarkeit und Aktivierung der Schnittstelle prüfen. Bei check/probe auch Benutzer, "
               "Telefonie-Rechte und Kennwort prüfen. Bei monitor den Callmonitor mit #96*5* aktivieren. "
               "Kennwörter und vollständige Rufnummern nicht in Fehlerberichte kopieren.", file=sys.stderr)
+        if args.command in ("run", "configure", "validate", "status"):
+            print("Dienstkonfiguration unter /etc/rufpass/config.toml und Zugriffsrechte prüfen.",
+                  file=sys.stderr)
         return 1
 
 

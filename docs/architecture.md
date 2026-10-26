@@ -1,51 +1,54 @@
-# Architekturentwurf
+# Architektur
 
-Status: Zielarchitektur. Lesende Diagnose und Live-Erkennung sind implementiert;
-Der getrennte temporäre Schreibtest wurde am Gerät bestätigt. Ein neuer expliziter
-Sichttest mit probe --keep lässt einen normalen Testkontakt gespeichert; sein Gerätetest steht aus.
-Automatische Freigaben und SQLite-Verwaltung stehen noch aus. Das Durchstellen
-einer Nummer aus dem zweiten Telefonbuch wurde manuell bestätigt.
+Status: Automatische Freigabe und Linux-Dienst sind implementiert und mit simulierten
+Schnittstellen getestet. Die grundlegenden FRITZ!Box-Aktionen und der sichtbare
+Testkontakt sind am Gerät bestätigt. Der vollständige Dauerbetrieb ist noch zu prüfen.
 
 ```mermaid
 flowchart LR
-    F[FRITZ!Box Callmonitor] -->|Wählbeginn, TCP 1012| D[Rufpass im Heimnetz]
+    F[FRITZ!Box Callmonitor] -->|Wählbeginn, TCP 1012| D[Rufpass]
     D --> S[(SQLite)]
-    D -->|TR-064, authentifiziert| P[Telefonbuch Rückruf-Freigaben]
+    D -->|TR-064| P[Zusätzliches lokales Telefonbuch]
     P --> R[FRITZ!Box Rufbehandlung]
+    M[systemd] --> D
 ```
 
-## Minimaler Umfang
+## Ablauf
 
-- Ein Prozess, eine SQLite-Datei, ein dediziertes lokales Telefonbuch.
-- Automatisches Wiederverbinden zum Callmonitor nach Verbindungsabbruch.
-- Speichern anstehender Änderungen vor Schreibversuchen; Wiederholung bei temporären Fehlern.
-- Telefonbuch vor Änderungen abgleichen, um doppelte Einträge nach Abstürzen zu vermeiden.
-- Eindeutige Herkunftszuordnung: Nur vom Dienst erzeugte und noch eindeutig zugeordnete Einträge löschen.
-- Keine kompletten Telefonbücher ersetzen oder wiederherstellen.
-- Vorwahlbehandlung mit Landes- und Ortsvorwahl; interne Nummern, Steuercodes und
-  nicht sinnvoll rückrufbare Sondernummern ausschließen. Regeln vor Implementierung festlegen.
-- Begrenzte lokale Telefonbuchkapazität berücksichtigen und bei vollem Buch sichtbar Fehler melden.
-- Probelauf ohne Schreibzugriffe vor dem Echtbetrieb.
-- Zugangsdaten außerhalb von Git; keine Nummern oder Zugangsdaten in normalen Betriebslogs.
+Ein Vordergrundprozess liest Live-Wählereignisse. Er normalisiert externe Zielnummern
+mit Landes-/Ortsvorwahl und speichert jeden geeigneten Wählversuch vor dem ersten
+Schreibzugriff in SQLite. Das Schema enthält Nummer, eindeutige Kontaktkennung,
+letzten Wählzeitpunkt, Ablaufzeit, Eintrags-UID und eine Markierung für neue Wählereignisse.
 
-## Daten
+Der Abgleich liest die Telefonbücher und identifiziert das Zielbuch nach ID und Name.
+Vorhandene persönliche Nummern werden nicht kopiert. Eigene Einträge werden über
+persistierte Kennung, UID, Nummer und einfache Inhaltsprüfung zugeordnet. Zusätzliche
+persönliche Inhalte, geänderte Namen, Nummern oder VIP-Kennzeichnungen führen zur
+Abgabe der Verwaltung. Es gibt weder einen Komplettimport noch ein Ersetzen von Büchern.
 
-Pro Freigabe: normalisierte Nummer, letzter eigener Wählversuch, Ablaufzeit,
-Telefonbuch-ID, Eintrags-UID und Synchronisationsstatus. Zeitstempel intern in UTC.
-Die Laufzeit von 30 Tagen ist ein erster Entwurf und noch nicht endgültig festgelegt.
+## Fehler und Wiederanlauf
+
+Unklare Antworten bleiben als lokaler Zustand erhalten. Der nächste Abgleich sucht
+die persistierte Kennung, bevor ein neuer Eintrag erstellt wird. Abgelaufene eigene
+Einträge werden gezielt nach UID gelöscht. Nicht mehr vorhandene Einträge werden
+aus dem lokalen Zustand entfernt. Widersprüchliche Kennungen bleiben unangetastet.
+
+Eine Linux-Dateisperre verhindert zwei gleichzeitig schreibende Dienstinstanzen
+für dieselbe Datenbank. Die Datenbank ist an Host, Zielbuch-ID und -Name gebunden.
+Ein Verlust der Datenbank führt nicht zur automatischen Übernahme alter Telefonbucheinträge.
+
+Callmonitor und TR-064 haben getrennte Verbindungen. Der Monitor verwendet die
+Wiederverbindung der Bibliothek; der Hauptprozess startet ihn bei endgültigem Abbruch
+erneut. Telefonbuchfehler werden nach 30 Sekunden erneut geprüft. Wählereignisse
+während eines Ausfalls oder vor der lokalen Speicherung können verloren gehen.
 
 ## Betrieb
 
-Container nur bei bereits vorhandenem Docker Compose, sonst unter Linux systemd.
-Kein eingehender Web-Port erforderlich. Der Dienst baut Verbindungen zur Box auf.
-Persistentes Datenverzeichnis für SQLite; Neustartregel und Betriebslogs.
-MQTT-Statusmeldungen und eine Weboberfläche sind spätere optionale Erweiterungen.
+Ein systemd-Dienst übernimmt Autostart, Neustart bei Prozessfehlern und Journal-Logs.
+Konfiguration liegt unter `/etc/rufpass`, SQLite unter `/var/lib/rufpass`, Python und
+Abhängigkeiten unter `/opt/rufpass`. Der Dienst hat einen eigenen Benutzer und
+Schreibzugriff nur auf seinen Zustandsbereich. Kein eingehender Web-Port erforderlich.
 
-## Abnahme
-
-- Nummer nur im zweiten Telefonbuch wird von der bestehenden Regel zugelassen.
-- Wählversuch ohne Annahme erzeugt eine Freigabe.
-- Erneutes Wählen verlängert die Freigabe ohne doppelten Eintrag.
-- Ablauf entfernt nur den eigenen Eintrag; persönliche Kontakte bleiben erhalten.
-- Neustart und erneutes Verbinden erzeugen keine Duplikate.
-- TR-064-Ausfall, volles Telefonbuch und ungültige Nummern führen zu sichtbaren Fehlern.
+Die erste vollständige Version zielt auf Ubuntu mit Python 3.12. Deutsche Orts- und
+Landesvorwahlen sind die zuerst unterstützte Nummernkonvention. Docker, MQTT und
+eine Weboberfläche sind keine Voraussetzungen und werden derzeit nicht mitgeliefert.

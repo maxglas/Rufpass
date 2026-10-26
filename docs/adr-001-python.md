@@ -32,7 +32,7 @@ Die Entscheidung wurde getroffen, bevor Anwendungscode implementiert wurde.
 - Linux ist das erste Ziel für dokumentierten und getesteten Dauerbetrieb.
 - Die Anwendung soll als normaler Vordergrundprozess startbar sein. Dienstverwaltung
   erfolgt außerhalb der Fachlogik; systemd ist der vorgeschlagene erste Betriebsweg.
-- fritzconnection wird als Kandidat für TR-064 und Callmonitor am Gerät geprüft.
+- fritzconnection wird für TR-064 und Callmonitor verwendet; die grundlegenden Aktionen sind am Gerät bestätigt.
 - SQLite ist für lokale Freigaben vorgesehen.
 - Kein Windows-Installationspaket oder Windows-Service-Support im ersten Umfang.
 - Docker ist eine mögliche spätere Verpackung, keine Voraussetzung der Fachlogik.
@@ -42,8 +42,8 @@ Die Entscheidung wurde getroffen, bevor Anwendungscode implementiert wurde.
 1. [x] Durchstellen einer Nummer aus einem zweiten lokalen Telefonbuch am Testgerät bestätigen.
 2. [x] Callmonitor und lesenden TR-064-Zugriff am Gerät prüfen.
 3. [x] Diagnose für lesenden Telefonbuchzugriff und Live-Wählereignisse implementieren und am Gerät prüfen.
-4. [ ] Freigabeverwaltung mit gezielten Telefonbuchänderungen und Tests implementieren.
-5. [ ] Dienstbetrieb auf Ubuntu prüfen und dokumentieren.
+4. [x] Freigabeverwaltung mit gezielten Telefonbuchänderungen und Tests implementieren.
+5. [ ] Implementierten und dokumentierten Ubuntu-Dienst vollständig am Gerät prüfen.
 
 Eine Neubewertung ist sinnvoll, wenn konkrete Anforderungen an Windows-Betrieb
 vorliegen. Sie löst nicht automatisch eine zweite Implementierung aus.
