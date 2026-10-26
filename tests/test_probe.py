@@ -12,6 +12,7 @@ class ProbeTests(unittest.TestCase):
     def setUp(self):
         self.connection = Mock()
         self.created = None
+        self.expected_number = "**9"
         self.deleted = []
         self.output = io.StringIO()
         self.error = io.StringIO()
@@ -24,7 +25,7 @@ class ProbeTests(unittest.TestCase):
             if operation == "SetPhonebookEntryUID":
                 self.created = ET.fromstring(args["NewPhonebookEntryData"])
                 self.assertIsNone(self.created.find("uniqueid"))
-                self.assertEqual(self.created.findtext("telephony/number"), "**9")
+                self.assertEqual(self.created.findtext("telephony/number"), self.expected_number)
                 ET.SubElement(self.created, "uniqueid").text = "42"
                 return {"NewPhonebookEntryUniqueID": 42}
             self.assertEqual(args["NewPhonebookEntryUniqueID"], 42)
@@ -40,9 +41,9 @@ class ProbeTests(unittest.TestCase):
         self.action = action
         self.connection.call_action.side_effect = action
 
-    def run_probe(self):
+    def run_probe(self, **kwargs):
         with contextlib.redirect_stdout(self.output), contextlib.redirect_stderr(self.error):
-            probe_phonebook(self.connection, 1, "Rufpass")
+            probe_phonebook(self.connection, 1, "Rufpass", **kwargs)
 
     def test_creates_without_uid_and_only_deletes_returned_verified_uid(self):
         self.run_probe()
@@ -54,6 +55,21 @@ class ProbeTests(unittest.TestCase):
     def test_default_book_is_rejected_without_any_network_calls(self):
         with self.assertRaises(DiagnosticError):
             probe_phonebook(self.connection, 0, "Telefonbuch")
+        self.connection.call_action.assert_not_called()
+
+    def test_keep_creates_visible_external_contact_without_delete(self):
+        self.expected_number = "+493000000001"
+        self.run_probe(keep=True, number="+49 (30) 0000-0001")
+        self.assertEqual(self.deleted, [])
+        self.assertEqual(self.connection.call_action.call_count, 3)
+        self.assertEqual(self.created.find("telephony/number").get("type"), "work")
+        self.assertIn("bleibt gespeichert", self.output.getvalue())
+        self.assertNotIn(self.expected_number, self.output.getvalue())
+
+    def test_keep_requires_external_number_before_any_router_operation(self):
+        for number in (None, "", "**9", "*31#03000000001", "112", "12345678", "+012345678", "\x1b[31m012345678"):
+            with self.subTest(number=number), self.assertRaises(DiagnosticError):
+                self.run_probe(keep=True, number=number)
         self.connection.call_action.assert_not_called()
 
     def test_mismatched_book_name_is_rejected_before_writes(self):

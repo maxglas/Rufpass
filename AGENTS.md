@@ -19,8 +19,11 @@ Kleiner Hintergrunddienst für automatische Rückruf-Freigaben an einer FRITZ!Bo
 - Das Durchstellen einer Nummer aus dem zweiten lokalen Telefonbuch wurde am 26.10.2026
   vom Projektbetreiber bestätigt. Lesender TR-064-Zugriff auf das Zielbuch und die
   Live-Erkennung eines Wählversuchs wurden ebenfalls am Gerät bestätigt.
-- check und monitor bleiben ausschließlich lesend. probe ist ein expliziter temporärer
-  Schreibtest; seine Prüfung am Gerät steht aus. Automatische Freigaben gibt es noch nicht.
+- check und monitor bleiben ausschließlich lesend. Der temporäre probe-Schreibtest
+  wurde am Gerät einschließlich Anlegen, Rücklesen und Entfernen bestätigt.
+- probe --keep lässt auf expliziten Aufruf einen sichtbaren Testkontakt mit lokal
+  eingegebener externer Nummer bestehen; keine automatische Löschung oder Ablaufverwaltung.
+  Der neue Sichttest ist noch am Gerät zu prüfen. Automatische Freigaben gibt es noch nicht.
 - Tests: python -m unittest discover -s tests -v (nach Installation des Pakets).
 - Schlanke Umsetzung; Caddy, MQTT und eine Weboberfläche gehören nicht zum ersten Umfang.
 - Ausschließlich ein dediziertes lokales Telefonbuch verwalten. Keine persönlichen Kontakte

@@ -114,10 +114,18 @@ def run_check(args) -> int:
     return 0
 
 
-def probe_phonebook(connection, book_id: int, expected_name: str) -> None:
-    """Create, identify and delete only our temporary contact by its returned UID."""
+def probe_phonebook(connection, book_id: int, expected_name: str, *, keep: bool = False,
+                    number: str | None = None) -> None:
+    """Create and verify our test contact; remove it unless explicitly retained."""
     if book_id <= 0:
         raise DiagnosticError("Der Schreibtest ist im Standard-Telefonbuch (ID 0) nicht erlaubt.")
+    if keep:
+        number = re.sub(r"[ ()/\-]", "", number or "")
+        if re.fullmatch(r"(?:\+[1-9][0-9]{6,14}|0[0-9]{6,14})", number) is None:
+            raise DiagnosticError("Für den sichtbaren Test eine eigene externe Nummer mit Orts-/Mobilfunk- "
+                                  "oder Landesvorwahl eingeben; keine internen Nummern oder Steuercodes.")
+    else:
+        number = "**9"
     service = "X_AVM-DE_OnTel1"
     info = connection.call_action(service, "GetPhonebook", NewPhonebookID=book_id)
     if info.get("NewPhonebookName") != expected_name:
@@ -126,9 +134,14 @@ def probe_phonebook(connection, book_id: int, expected_name: str) -> None:
     contact = ET.Element("contact")
     ET.SubElement(contact, "category").text = "0"
     ET.SubElement(ET.SubElement(contact, "person"), "realName").text = name
-    ET.SubElement(ET.SubElement(contact, "telephony"), "number", type="intern", prio="0").text = "**9"
-    print(f"Temporärer Testkontakt: {name!r}, Telefonbuch-ID {book_id}.", flush=True)
-    print("Verwendet nur die interne Rundrufnummer **9; es wird kein Anruf ausgelöst.", flush=True)
+    ET.SubElement(ET.SubElement(contact, "telephony"), "number",
+                  type="work" if keep else "intern", prio="0").text = number
+    print(f"Testkontakt: {name!r}, Telefonbuch-ID {book_id}.", flush=True)
+    if keep:
+        print("Der sichtbare Testkontakt bleibt gespeichert, bis du ihn im Telefonbuch löschst. "
+              "Es wird kein Anruf ausgelöst.", flush=True)
+    else:
+        print("Verwendet nur die interne Rundrufnummer **9; es wird kein Anruf ausgelöst.", flush=True)
     uid = None
     try:
         result = connection.call_action(
@@ -146,9 +159,13 @@ def probe_phonebook(connection, book_id: int, expected_name: str) -> None:
         saved = ET.fromstring(entry["NewPhonebookEntryData"])
         if (saved.tag != "contact" or saved.findtext("person/realName") != name
                 or saved.findtext("uniqueid") != str(uid)
-                or [node.text for node in saved.findall("telephony/number")] != ["**9"]):
+                or [node.text for node in saved.findall("telephony/number")] != [number]):
             raise DiagnosticError("Rückgelesener Kontakt ist nicht eindeutig unser Testkontakt; keine Löschung.")
         print(f"Anlegen und Rücklesen erfolgreich (Eintrags-UID {uid}).", flush=True)
+        if keep:
+            print("OK: Testkontakt bleibt gespeichert. Telefonbuchansicht in der FRITZ!Box neu laden.",
+                  flush=True)
+            return
         connection.call_action(
             service, "DeletePhonebookEntryUID", NewPhonebookID=book_id,
             NewPhonebookEntryUniqueID=uid,
@@ -171,7 +188,10 @@ def probe_phonebook(connection, book_id: int, expected_name: str) -> None:
 
 
 def run_probe(args) -> int:
-    probe_phonebook(connect(args), args.phonebook_id, args.phonebook)
+    number = None
+    if args.keep:
+        number = input("Eigene externe Testnummer mit Vorwahl (wird im Telefonbuch gespeichert): ")
+    probe_phonebook(connect(args), args.phonebook_id, args.phonebook, keep=args.keep, number=number)
     return 0
 
 
@@ -201,7 +221,7 @@ def main(argv=None) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     check = commands.add_parser("check", help="Telefonbuchzugriff und Ziel-ID prüfen")
     monitor = commands.add_parser("monitor", help="Ausgehende Wählversuche live erkennen")
-    probe = commands.add_parser("probe", help="Temporären Testkontakt anlegen, prüfen und wieder entfernen")
+    probe = commands.add_parser("probe", help="Testkontakt anlegen und prüfen; standardmäßig wieder entfernen")
     for command in (check, monitor, probe):
         command.add_argument("--host", default=os.environ.get("RUFPASS_HOST", "fritz.box"),
                              help="FRITZ!Box-Hostname oder IP (Standard: fritz.box)")
@@ -211,6 +231,8 @@ def main(argv=None) -> int:
                              help="Exakter Name des zusätzlichen Telefonbuchs (Standard: Rufpass)")
     probe.add_argument("--phonebook-id", type=int, required=True,
                        help="ID des zusätzlichen lokalen Telefonbuchs; ID 0 ist gesperrt")
+    probe.add_argument("--keep", action="store_true",
+                       help="Sichtbaren Testkontakt mit lokal abgefragter externer Nummer gespeichert lassen")
     monitor.add_argument("--show-numbers", action="store_true",
                          help="Zielnummern für den lokalen Test unmaskiert anzeigen")
     args = parser.parse_args(argv)

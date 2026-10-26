@@ -5,7 +5,9 @@
 Am 26.10.2026 wurde für eine FRITZ!Box 7690 mit FRITZ!OS 8.25 gemeldet:
 Eine ausschließlich im zweiten lokalen Telefonbuch gespeicherte Nummer wird durchgestellt.
 Lesender TR-064-Zugriff mit dem dedizierten Benutzer und Live-Erkennung eines
-Wählversuchs wurden bestätigt. Schreibrechte sind noch zu prüfen.
+Wählversuchs wurden bestätigt. Anlegen, Rücklesen und Entfernen eines temporären
+Testkontakts wurden ebenfalls erfolgreich ausgeführt; die nötigen Schreibrechte
+sind damit für diesen Test bestätigt.
 Zielumgebung: Ubuntu 24.04.4 LTS, Python 3.12.3.
 
 Nächster Schritt: [Kontrollierten Schreibtest ausführen](diagnostics.md#3-schreibrechte-gezielt-prüfen).

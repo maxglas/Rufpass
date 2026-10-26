@@ -104,6 +104,36 @@ wird das Anlegen nicht automatisch wiederholt. Ein Testkontakt kann dann zurück
 sein eindeutiger Name steht in der Ausgabe. Falls vorhanden, ausschließlich diesen
 Kontakt im Zielbuch manuell entfernen. Es gibt keine pauschale Lösch- oder Wiederherstellungsfunktion.
 
+## 4. Testkontakt sichtbar gespeichert lassen
+
+Der ursprüngliche Schreibtest wurde auf einer FRITZ!Box 7690 mit FRITZ!OS 8.25
+einschließlich Rücklesen und Entfernen erfolgreich ausgeführt. Für eine Sichtprüfung
+gibt es einen zusätzlichen Modus:
+
+```bash
+.venv/bin/rufpass probe --phonebook-id 1 --phonebook Rufpass --keep
+```
+
+Der Befehl fragt zuerst eine **eigene externe Testnummer mit Vorwahl** ab,
+beispielsweise die eigene Mobilfunknummer. Diese Nummer lokal eingeben; sie wird
+nicht als Kommandozeilenargument benötigt und landet dadurch nicht in der Shell-Historie.
+Danach wird das FRITZ!Box-Kennwort verdeckt abgefragt.
+
+Es entsteht ein normaler Kontakt `Rufpass Schreibtest <Zufallskennung>` mit der
+eingegebenen Nummer. Nach dem Rücklesen bleibt er absichtlich gespeichert.
+Die normale Telefonbuchansicht im Browser anschließend neu laden.
+
+Erwartung: `OK: Testkontakt bleibt gespeichert.`
+
+Es wird kein Anruf ausgelöst. Die Nummer ist durch den Telefonbucheintrag
+für die bestehende Positivliste bekannt. Der Eintrag hat noch kein automatisches
+Ablaufdatum und muss nach dem Test manuell gelöscht werden. Jeder erneute
+Aufruf legt einen weiteren markierten Testkontakt an.
+
+Dieser Modus verwendet eine externe Nummer, weil interne Nummern wie `**9`
+in der Oberfläche gesondert behandelt werden und sich für die normale Kontaktansicht
+nicht als Sichttest eignen. `monitor` bleibt weiterhin rein lesend.
+
 ## Welcher Befehl legt einen Kontakt an?
 
 | Befehl | Verhalten |
@@ -111,9 +141,9 @@ Kontakt im Zielbuch manuell entfernen. Es gibt keine pauschale Lösch- oder Wied
 | `check` | Liest und zählt Kontakte; keine Änderungen. |
 | `monitor` | Zeigt Wählversuche an; legt keine Freigaben an. |
 | `probe` | Legt einen temporären Testkontakt an und entfernt ihn wieder. |
+| `probe --keep` | Lässt einen Testkontakt mit der lokal eingegebenen externen Nummer gespeichert. |
 
-Auch nach einem erfolgreichen `probe` ist das Zielbuch wieder leer, wenn es vorher
-leer war. Automatische Rückruf-Freigaben sind in dieser Version noch nicht verfügbar.
+Nach `probe` ohne `--keep` ist das Zielbuch wieder leer, wenn es vorher leer war. Automatische Rückruf-Freigaben sind in dieser Version noch nicht verfügbar.
 Die installierte Paketversion lässt sich mit `.venv/bin/rufpass --version` prüfen.
 
 ## Fehler und nächste Schritte

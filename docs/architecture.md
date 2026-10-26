@@ -1,7 +1,8 @@
 # Architekturentwurf
 
 Status: Zielarchitektur. Lesende Diagnose und Live-Erkennung sind implementiert;
-Ein getrennter temporärer Schreibtest ist implementiert, aber noch nicht am Gerät geprüft.
+Der getrennte temporäre Schreibtest wurde am Gerät bestätigt. Ein neuer expliziter
+Sichttest mit probe --keep lässt einen normalen Testkontakt gespeichert; sein Gerätetest steht aus.
 Automatische Freigaben und SQLite-Verwaltung stehen noch aus. Das Durchstellen
 einer Nummer aus dem zweiten Telefonbuch wurde manuell bestätigt.
 

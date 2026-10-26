@@ -70,7 +70,9 @@ Cloud-Dienst, MQTT-Broker oder Reverse Proxy ist für die Kernfunktion nicht erf
 Manuell bestätigt ist das Durchstellen von Nummern aus einem zweiten lokalen Telefonbuch.
 Gemeldete Zielumgebung: Ubuntu 24.04.4 LTS mit Python 3.12.3.
 Lesender Telefonbuchzugriff und Live-Erkennung eines Wählversuchs wurden dort ebenfalls
-bestätigt. Schreibtest und automatische Telefonbuchpflege sind noch nicht am Gerät geprüft;
+bestätigt. Anlegen, Rücklesen und Entfernen eines temporären Testkontakts wurden ebenfalls
+erfolgreich am Gerät geprüft. Der Sichttest mit `probe --keep` und die automatische
+Telefonbuchpflege sind noch nicht am Gerät geprüft;
 weitere Modelle sind nicht getestet.
 
 ## Rechte und Grenzen
@@ -91,7 +93,8 @@ soll im Programm umgesetzt werden; sie ersetzt keine Berechtigungsgrenze der Box
 - [x] Durchstellen einer Nummer aus einem zweiten lokalen Telefonbuch manuell bestätigen.
 - [x] Lesende Diagnose und Erkennung ausgehender Wählereignisse mit simulierten Schnittstellen testen.
 - [x] Lesenden Telefonbuchzugriff und Wählereignisse am Callmonitor prüfen.
-- [ ] Temporären Schreibtest am Gerät durchführen.
+- [x] Temporären Schreibtest am Gerät durchführen.
+- [ ] Sichtbaren externen Testkontakt mit `probe --keep` am Gerät prüfen.
 - [ ] Erfassung und Nummernnormalisierung implementieren.
 - [ ] Gezielte Telefonbuchpflege und Ablaufverwaltung implementieren.
 - [ ] Probelauf, automatisierte Tests und Gerätetests durchführen.
