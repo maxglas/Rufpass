@@ -18,6 +18,7 @@ Den konkreten Anwendungsfall beschreiben. Für Implementierungen den Entwurf in
 [docs/architecture.md](docs/architecture.md) beachten. Kleine Änderungen mit klarer
 Begründung und passenden Tests sind leichter zu prüfen.
 
-Solange noch kein lauffähiger Dienst und keine Testbefehle existieren, keine
-Installations- oder Testerfolge behaupten. Die Lizenz für öffentliche Beiträge muss
-vor der öffentlichen Freigabe festgelegt werden.
+Tests nach Installation: `python -m unittest discover -s tests -v`. Sie verwenden
+synthetische Daten und simulierte Schnittstellen. Gerätetests und automatisierte
+Tests ausdrücklich unterscheiden. Die aktuelle Diagnose enthält keine Schreibfunktionen.
+Die Lizenz für öffentliche Beiträge muss vor der öffentlichen Freigabe festgelegt werden.

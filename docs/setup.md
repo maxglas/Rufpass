@@ -1,5 +1,14 @@
 # Vorabtest und nächste Schritte
 
+## Stand der Validierung
+
+Am 26.10.2026 wurde für eine FRITZ!Box 7690 mit FRITZ!OS 8.25 gemeldet:
+Eine ausschließlich im zweiten lokalen Telefonbuch gespeicherte Nummer wird durchgestellt.
+Der zusätzliche Benutzer ist angelegt; seine Schnittstellenrechte sind noch zu prüfen.
+Zielumgebung: Ubuntu 24.04.4 LTS, Python 3.12.3.
+
+Nächster Schritt: [Diagnose installieren und ausführen](diagnostics.md).
+
 ## 1. Sperrregel manuell prüfen
 
 1. Aktuelle Telefonbücher sichern und die vorhandene Sperrregel dokumentieren.
@@ -39,5 +48,5 @@ Python ist als Implementierung festgelegt; siehe [ADR-001](adr-001-python.md). N
 
 ## Veröffentlichungsstand
 
-Es gibt noch keine Installation für Endanwender. Die obigen Schritte dienen der
-technischen Validierung vor der Implementierung.
+Die erste Diagnoseversion ist nach [docs/diagnostics.md](diagnostics.md) installierbar.
+Automatische Freigaben und eine Installation für den Dauerbetrieb sind noch nicht verfügbar.

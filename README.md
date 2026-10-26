@@ -15,9 +15,17 @@ Kontakt an, erreichst niemanden und der spätere Rückruf wird blockiert.
 Rufpass soll diese Lücke schließen, ohne dass jede selbst gewählte Nummer dauerhaft
 in deinem persönlichen Telefonbuch landen muss.
 
-> **Entwicklungsstand: Konzept und technische Vorbereitung.** Es gibt noch keinen
-> lauffähigen Dienst. Die folgenden Funktionen beschreiben das geplante Verhalten.
-> Die Rufbehandlung mit einem zweiten Telefonbuch muss zuerst am Gerät bestätigt werden.
+> **Entwicklungsstand: erste Diagnoseversion.** `rufpass check` prüft den lesenden
+> Telefonbuchzugriff; `rufpass monitor` erkennt ausgehende Wählversuche. Automatische
+> Freigaben und ein dauerhaft installierter Dienst sind noch nicht implementiert.
+> Das Durchstellen einer Nummer aus einem zweiten lokalen Telefonbuch wurde auf
+> einer FRITZ!Box 7690 mit FRITZ!OS 8.25 manuell bestätigt.
+
+## Diagnose ausprobieren
+
+Die [Ubuntu-Anleitung](docs/diagnostics.md) führt durch Installation,
+Telefonbuchprüfung und einen Testanruf ohne Gesprächsannahme. Benötigt wird Python 3.12
+oder neuer. Die Diagnose führt keine Telefonbuchänderungen durch.
 
 ## So soll es funktionieren
 
@@ -57,7 +65,10 @@ Cloud-Dienst, MQTT-Broker oder Reverse Proxy ist für die Kernfunktion nicht erf
 - Ein dauerhaft laufender Rechner mit Netzwerkzugriff auf die FRITZ!Box.
 
 **Erstes vorgesehenes Testgerät:** FRITZ!Box 7690 mit FRITZ!OS 8.25.
-Die Kompatibilität ist noch nicht am Gerät bestätigt; weitere Modelle sind noch nicht getestet.
+Manuell bestätigt ist das Durchstellen von Nummern aus einem zweiten lokalen Telefonbuch.
+Gemeldete Zielumgebung: Ubuntu 24.04.4 LTS mit Python 3.12.3.
+Die Diagnose und automatische Telefonbuchpflege sind dort noch nicht am Gerät geprüft;
+weitere Modelle sind nicht getestet.
 
 ## Rechte und Grenzen
 
@@ -74,7 +85,8 @@ soll im Programm umgesetzt werden; sie ersetzt keine Berechtigungsgrenze der Box
 
 ## Nächste Schritte
 
-- [ ] Verhalten der Sperrregel mit einem zweiten Telefonbuch bestätigen.
+- [x] Durchstellen einer Nummer aus einem zweiten lokalen Telefonbuch manuell bestätigen.
+- [x] Lesende Diagnose und Erkennung ausgehender Wählereignisse mit simulierten Schnittstellen testen.
 - [ ] Wählereignisse am Callmonitor prüfen.
 - [ ] Erfassung und Nummernnormalisierung implementieren.
 - [ ] Gezielte Telefonbuchpflege und Ablaufverwaltung implementieren.
@@ -85,6 +97,7 @@ soll im Programm umgesetzt werden; sie ersetzt keine Berechtigungsgrenze der Box
 
 - [Architekturentscheidung: Python](docs/adr-001-python.md)
 - [Architektur und Implementierungsgrenzen](docs/architecture.md)
+- [Diagnose auf Ubuntu installieren und testen](docs/diagnostics.md)
 - [Manueller Vorabtest und nächste Schritte](docs/setup.md)
 - [Recherche und Quellen](docs/research.md)
 - [Mitwirken und Fehler melden](CONTRIBUTING.md)

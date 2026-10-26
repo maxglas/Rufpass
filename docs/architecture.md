@@ -1,6 +1,8 @@
 # Architekturentwurf
 
-Status: Vorschlag, noch nicht implementiert oder am Gerät validiert.
+Status: Zielarchitektur. Lesende Diagnose und Live-Erkennung sind implementiert;
+automatische Freigaben und SQLite-Verwaltung stehen noch aus. Das Durchstellen
+einer Nummer aus dem zweiten Telefonbuch wurde manuell bestätigt.
 
 ```mermaid
 flowchart LR

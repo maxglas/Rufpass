@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rufpass"
+version = "0.1.0.dev1"
+description = "Diagnose und geplante automatische Rueckruf-Freigaben fuer die FRITZ!Box"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{name = "Maximilian Glas"}]
+dependencies = ["fritzconnection>=1.15.1,<2"]
+
+[project.scripts]
+rufpass = "rufpass.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -39,9 +39,9 @@ Die Entscheidung wurde getroffen, bevor Anwendungscode implementiert wurde.
 
 ## Nächste Schritte
 
-1. [ ] Sperrregel mit einem zweiten lokalen Telefonbuch am Testgerät prüfen.
+1. [x] Durchstellen einer Nummer aus einem zweiten lokalen Telefonbuch am Testgerät bestätigen.
 2. [ ] Callmonitor und lesenden TR-064-Zugriff prüfen.
-3. [ ] Einen Probelauf ohne Schreibzugriffe implementieren.
+3. [x] Diagnose für lesenden Telefonbuchzugriff und Live-Wählereignisse implementieren; Gerätetest steht aus.
 4. [ ] Freigabeverwaltung mit gezielten Telefonbuchänderungen und Tests implementieren.
 5. [ ] Dienstbetrieb auf Ubuntu prüfen und dokumentieren.
 
