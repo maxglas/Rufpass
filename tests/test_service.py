@@ -17,7 +17,7 @@ from rufpass.service import Engine, Store, normalize_number, instance_lock
 def config(database):
     return Config(host="example.invalid", user="rufpass", password="synthetic-secret",
                   phonebook_id=1, phonebook_name="Rufpass", country_code="49", area_code="30",
-                  database=str(database), ttl_days=30)
+                  database=str(database), ttl_days=30, reverse_lookup=False)
 
 
 def contact(name, number, uid, **attributes):
@@ -137,6 +137,31 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(self.router.created, 0)
         self.engine.sync(self.router, self.now + 31 * 86400)
         self.assertEqual(self.router.deleted, [101])
+
+    def test_lookup_is_only_used_for_new_unknown_numbers_and_saved_before_write(self):
+        self.engine.config = replace(self.config, reverse_lookup=True)
+        with patch.object(self.engine.lookup, "find", return_value="Beispielmuseum") as lookup:
+            self.router.fail_create_reply = True
+            self.engine.dial(self.number, self.now)
+            with self.assertRaises(TimeoutError):
+                self.engine.sync(self.router, self.now)
+            self.assertTrue(self.store.rows()[0]["contact_name"].endswith(" Beispielmuseum"))
+            self.router.fail_create_reply = False
+            self.engine.sync(self.router, self.now + 1)
+            self.engine.dial(self.number, self.now + 2)
+            self.engine.sync(self.router, self.now + 2)
+            lookup.assert_called_once_with(self.number)
+        self.assertEqual(self.router.created, 1)
+
+    def test_disabled_lookup_and_known_number_do_not_contact_provider(self):
+        with patch.object(self.engine.lookup, "find") as lookup:
+            self.create_grant()
+            lookup.assert_not_called()
+            self.engine.config = replace(self.config, reverse_lookup=True)
+            self.router.other_numbers.add("+493000000002")
+            self.engine.dial("+493000000002", self.now)
+            self.engine.sync(self.router, self.now)
+            lookup.assert_not_called()
 
     def test_unreadable_phonebook_prevents_creation(self):
         self.engine.dial(self.number, self.now)
@@ -347,6 +372,7 @@ class ConfigTests(unittest.TestCase):
             cfg = load_config(str(path))
             self.assertEqual(cfg.area_code, "30")
             self.assertEqual(cfg.ttl_days, 365)
+            self.assertTrue(cfg.reverse_lookup)
             self.assertEqual(cfg.password, 'synthetic-"secret\\#')
             self.assertNotIn(cfg.password, repr(cfg))
             with self.assertRaises(ValueError):
@@ -365,7 +391,7 @@ class ConfigTests(unittest.TestCase):
             self.assertEqual(load_config(str(path)).ttl_days, 30)
 
     def test_rejects_default_book_and_invalid_expiry_or_area(self):
-        for changes in ({"phonebook_id": 0}, {"ttl_days": 0}, {"ttl_days": 366}, {"area_code": "030"}):
+        for changes in ({"phonebook_id": 0}, {"ttl_days": 0}, {"ttl_days": 366}, {"area_code": "030"}, {"reverse_lookup": "true"}):
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 replace(config("synthetic.sqlite3"), **changes)
 

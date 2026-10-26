@@ -21,6 +21,7 @@ class Config:
     area_code: str
     ttl_days: int = 365
     database: str = "/var/lib/rufpass/state.sqlite3"
+    reverse_lookup: bool = True
 
     def __post_init__(self):
         if not re.fullmatch(r"[a-zA-Z0-9_.-]+", self.host):
@@ -35,6 +36,8 @@ class Config:
             raise ValueError("area_code ohne führende 0 und ohne Landesvorwahl angeben.")
         if type(self.ttl_days) is not int or not 1 <= self.ttl_days <= 365:
             raise ValueError("ttl_days muss zwischen 1 und 365 liegen.")
+        if type(self.reverse_lookup) is not bool:
+            raise ValueError("reverse_lookup muss true oder false sein.")
         if not self.database or self.database == ":memory:":
             raise ValueError("Für den Dauerbetrieb ist eine persistente Datenbank erforderlich.")
 
@@ -75,4 +78,5 @@ def configure(path: str) -> None:
     with os.fdopen(descriptor, "w", encoding="utf-8") as file:
         for key, value in vars(config).items():
             file.write(f"{key} = {json.dumps(value, ensure_ascii=False)}\n")
+    print("Namenssuche ist aktiviert: Unbekannte Wählziele werden an Wikidata übertragen. Abschaltbar mit reverse_lookup = false.")
     print("Konfiguration gespeichert. Die Installation prüft jetzt die Schnittstellen.")

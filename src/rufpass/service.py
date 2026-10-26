@@ -17,6 +17,7 @@ from fritzconnection import FritzMonitor
 
 from rufpass.config import load_config
 from rufpass.router import Router
+from rufpass.lookup import NameLookup
 
 
 LOG = logging.getLogger("rufpass")
@@ -123,6 +124,7 @@ class Engine:
     def __init__(self, config, store):
         self.config = config
         self.store = store
+        self.lookup = NameLookup()
 
     def normalize(self, value):
         return normalize_number(value, self.config.country_code, self.config.area_code)
@@ -188,10 +190,11 @@ class Engine:
                     # A fresh call permits recreating a removed grant, with uncertain replies reconciled by marker.
                     self.store.set_uid(row["number"], None)
                 if row["contact_name"] == row["marker"]:
+                    name = self.lookup.find(row["number"]) if self.config.reverse_lookup else None
                     date_match = re.search(r"\d{4}-\d{2}-\d{2}", row["marker"])
                     created = date_match[0] if date_match else datetime.fromtimestamp(row["last_dial"]).date().isoformat()
                     row = dict(row)
-                    row["contact_name"] = f"Rufpass {created} Name unbekannt"
+                    row["contact_name"] = f"Rufpass {created} {name or 'Name unbekannt'}"
                     self.store.set_contact_name(row["number"], row["contact_name"])
                 # Persist the exact name before writing, including when the reply gets lost.
                 uid = router.create(row["contact_name"], row["number"])

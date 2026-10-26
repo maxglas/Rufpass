@@ -64,12 +64,16 @@ gleicht der Dienst seine Kennungen mit dem Telefonbuch ab, bevor er neue Einträ
 anlegt. Abgelaufene Kontakte werden nur gelöscht, wenn sie weiterhin eindeutig
 zum gespeicherten Rufpass-Eintrag passen. Manuell veränderte Kontakte bleiben erhalten.
 
-Eine externe Namenssuche ist noch nicht angebunden. Neue automatische Kontakte
-verwenden daher aktuell `Name unbekannt`. Die Gültigkeit bleibt unabhängig davon gleich.
+Mit `reverse_lookup = true` kann Rufpass für neue unbekannte Nummern eine kostenlose
+Rückwärtssuche bei [Wikidata](https://www.wikidata.org/) versuchen. Ein eindeutiger
+Treffer ergibt beispielsweise `Rufpass 2026-10-26 Beispielmuseum`, sonst bleibt es
+bei `Name unbekannt`. Dazu werden die Rufnummer und die öffentliche IP an den Dienst
+übertragen. Die Suche ist standardmäßig eingeschaltet; mit `reverse_lookup = false` lässt sie sich abschalten. Wikidata ist kein vollständiges
+Telefonverzeichnis: Viele Betriebe und private Nummern liefern keinen Treffer.
 
 ## Stand und Kompatibilität
 
-**Version 0.2.2:** Automatische Freigaben, Ablaufverwaltung, Wiederanlauf und
+**Version 0.2.3:** Automatische Freigaben, Ablaufverwaltung, Wiederanlauf und
 Ubuntu-Installer sind implementiert und mit simulierten Schnittstellen getestet.
 Der vollständige Dauerbetrieb am Gerät ist noch zu bestätigen.
 

@@ -48,9 +48,33 @@ und vergleicht normalisierte Nummern. Ist ein Buch nicht lesbar, wird keine neue
 Freigabe angelegt. Die Prüfung und das Schreiben sind keine atomare Router-Operation;
 eine gleichzeitig manuell hinzugefügte Nummer kann daher trotzdem eine Dublette erzeugen.
 
-Eine externe Rückwärtssuche ist noch nicht angebunden. Derzeit wird kein Wählziel an
-einen Auskunftsanbieter übertragen. Für die automatische Namensübernahme muss zunächst
-ein geeigneter Anbieter mit passendem API-Zugang festgelegt werden.
+Bei neuen unbekannten Nummern ist eine kostenlose Rückwärtssuche über den
+[Wikidata Query Service](https://www.wikidata.org/wiki/Help:Data_access) aktiviert.
+Die normalisierte Rufnummer und die öffentliche IP werden an `query.wikidata.org`
+übertragen. Es werden keine FRITZ!Box-Zugangsdaten, lokalen Telefonbuchnamen oder
+anderen Kontakte übertragen. Anmeldung und API-Schlüssel sind nicht erforderlich.
+Die [strukturierten Daten stehen unter CC0](https://www.wikidata.org/wiki/Wikidata:Licensing).
+
+Nur eine exakte Rufnummernzuordnung zu einem einzigen benannten Eintrag wird übernommen.
+Direkt als Personen klassifizierte Einträge werden ausgeschlossen. Die Abdeckung
+ist auf die in Wikidata erfassten Nummern begrenzt, vor allem Organisationen und
+öffentliche Einrichtungen; kleine Betriebe und Privatnummern fehlen häufig.
+Mehrdeutige Ergebnisse, fehlende Namen, ungültige Antworten oder Fehler ergeben
+`Name unbekannt`. Eine Anfrage hat drei Sekunden Netzwerk-Timeout. Das ist keine
+harte Obergrenze für DNS-Auflösung oder einen langsam tröpfelnden Antwortstrom.
+Es gibt höchstens eine Anfrage pro Sekunde; bei HTTP 429 wird mindestens eine Minute
+pausiert. Während einer Pause erhalten neue Kontakte sofort `Name unbekannt`.
+Das Suchergebnis wird vor dem Router-Schreibzugriff gespeichert und beim Wiederanlauf
+weiterverwendet. Bestehende Kontakte werden nicht nachträglich nachgeschlagen oder umbenannt.
+
+Zum Abschalten in `/etc/rufpass/config.toml` setzen und den Dienst neu starten:
+
+```toml
+reverse_lookup = false
+```
+
+Ohne diese Einstellung ist die Suche standardmäßig eingeschaltet, auch bei älteren Konfigurationen.
+Mit `reverse_lookup = true` kann sie wieder aktiviert werden.
 
 Wichtig: Bereits vorhandene Kontakte, auch `Rufpass Schreibtest …` aus `probe --keep`,
 werden nicht zusätzlich angelegt oder mit einem Ablaufdatum versehen. Für einen

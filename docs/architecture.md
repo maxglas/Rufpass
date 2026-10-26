@@ -31,6 +31,11 @@ die neuen Anzeigenamen, alte Einträge behalten ihre bisherige Zuordnung. Zusät
 persönliche Inhalte, geänderte Namen, Nummern oder VIP-Kennzeichnungen führen zur
 Abgabe der Verwaltung. Es gibt weder einen Komplettimport noch ein Ersetzen von Büchern.
 
+Vor der ersten Anlage kann eine kurze exakte Namenssuche bei Wikidata erfolgen,
+nach dem Abgleich aller lokalen Telefonbücher. Das Ergebnis einschließlich
+`Name unbekannt` wird vor dem Router-Schreibzugriff gespeichert. Fehler der
+optionalen Suche verhindern keine Freigabe.
+
 ## Fehler und Wiederanlauf
 
 Unklare Antworten bleiben als lokaler Zustand erhalten. Der nächste Abgleich sucht
