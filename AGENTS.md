@@ -13,6 +13,8 @@ Kleiner Hintergrunddienst für automatische Rückruf-Freigaben an einer FRITZ!Bo
 
 ## Arbeitsregeln
 
+- Nur lokal committen. Nicht pushen, außer der Nutzer beauftragt den konkreten Push ausdrücklich.
+
 - README.md und docs/ vor Implementierungsarbeiten lesen.
 - Das Durchstellen einer Nummer aus dem zweiten lokalen Telefonbuch wurde am 26.10.2026
   vom Projektbetreiber bestätigt. Live-Callmonitor und TR-064 sind noch am Gerät zu prüfen.
