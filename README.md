@@ -43,8 +43,9 @@ Details: [Betrieb auf Ubuntu](docs/operations.md).
 
 1. **Du rufst jemanden an.** Rufpass erkennt den Wählbeginn, auch wenn niemand abnimmt.
 2. **Eine Freigabe wird angelegt.** Neue Nummern erscheinen als normale Kontakte im
-   zusätzlichen Telefonbuch, mit Datum im Namen: `Rufpass automatisch 2026-10-26 …`.
-   Bereits bekannte Nummern werden nicht zusätzlich angelegt.
+   zusätzlichen Telefonbuch, mit Datum im Namen: `Rufpass 2026-10-26 Name unbekannt`.
+   Vorher werden alle lesbaren FRITZ!Box-Telefonbücher abgeglichen. Bereits bekannte
+   Nummern werden nicht zusätzlich angelegt, auch bei unterschiedlicher Schreibweise.
 3. **Der Rückruf darf klingeln.** Die FRITZ!Box übernimmt weiterhin die Rufbehandlung.
 4. **Die Freigabe läuft ab.** Standardmäßig nach 365 Tagen seit dem letzten eigenen
    Wählversuch. Erneutes Wählen verlängert sie ohne doppelten Eintrag.
@@ -63,9 +64,12 @@ gleicht der Dienst seine Kennungen mit dem Telefonbuch ab, bevor er neue Einträ
 anlegt. Abgelaufene Kontakte werden nur gelöscht, wenn sie weiterhin eindeutig
 zum gespeicherten Rufpass-Eintrag passen. Manuell veränderte Kontakte bleiben erhalten.
 
+Eine externe Namenssuche ist noch nicht angebunden. Neue automatische Kontakte
+verwenden daher aktuell `Name unbekannt`. Die Gültigkeit bleibt unabhängig davon gleich.
+
 ## Stand und Kompatibilität
 
-**Version 0.2.1:** Automatische Freigaben, Ablaufverwaltung, Wiederanlauf und
+**Version 0.2.2:** Automatische Freigaben, Ablaufverwaltung, Wiederanlauf und
 Ubuntu-Installer sind implementiert und mit simulierten Schnittstellen getestet.
 Der vollständige Dauerbetrieb am Gerät ist noch zu bestätigen.
 

@@ -38,11 +38,19 @@ sudo journalctl -u rufpass -n 30 --no-pager
 ```
 
 Nach einem eigenen Wählversuch zu einer noch unbekannten normalen Nummer erscheint
-ein Kontakt `Rufpass automatisch JJJJ-MM-TT <Kennung>` im zusätzlichen Telefonbuch. Weder
+ein Kontakt `Rufpass JJJJ-MM-TT Name unbekannt` im zusätzlichen Telefonbuch. Weder
 Gesprächsannahme noch eine bestimmte Gesprächsdauer sind erforderlich. Das Datum
 bezeichnet den ersten erfassten Wählversuch dieser Freigabe in der lokalen Zeitzone
 des Servers. Bei erneutem Wählen bleibt dieses Datum erhalten; die Gültigkeit wird
-ab dem neuen Wählversuch verlängert. Bestehende Einträge ohne Datum behalten ihren Namen.
+ab dem neuen Wählversuch verlängert. Bestehende Einträge behalten ihren Namen.
+Vor jeder neuen Anlage liest Rufpass alle von der FRITZ!Box bereitgestellten Telefonbücher
+und vergleicht normalisierte Nummern. Ist ein Buch nicht lesbar, wird keine neue
+Freigabe angelegt. Die Prüfung und das Schreiben sind keine atomare Router-Operation;
+eine gleichzeitig manuell hinzugefügte Nummer kann daher trotzdem eine Dublette erzeugen.
+
+Eine externe Rückwärtssuche ist noch nicht angebunden. Derzeit wird kein Wählziel an
+einen Auskunftsanbieter übertragen. Für die automatische Namensübernahme muss zunächst
+ein geeigneter Anbieter mit passendem API-Zugang festgelegt werden.
 
 Wichtig: Bereits vorhandene Kontakte, auch `Rufpass Schreibtest …` aus `probe --keep`,
 werden nicht zusätzlich angelegt oder mit einem Ablaufdatum versehen. Für einen
@@ -70,7 +78,8 @@ sudo systemctl restart rufpass
 ```
 
 `ttl_days` ist standardmäßig 365 und kann zwischen 1 und 365 liegen. Bereits
-gespeicherte Konfigurationen behalten ihren Wert; für ein Jahr dort `ttl_days = 365` setzen. Eine Änderung wirkt beim nächsten eigenen
+gespeicherte Konfigurationen behalten ihren Wert; für ein Jahr dort `ttl_days = 365` setzen.
+Eine Änderung wirkt beim nächsten eigenen
 Wählversuch auf die betreffende Freigabe; vorhandene Ablaufzeiten werden nicht
 pauschal umgeschrieben. Die Ortsvorwahl steht in `area_code` ohne führende 0, die
 Landesvorwahl in `country_code` ohne `+` oder `00`.

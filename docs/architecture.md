@@ -21,15 +21,20 @@ Schreibzugriff in SQLite. Das Schema enthält Nummer, eindeutige Kontaktkennung,
 letzten Wählzeitpunkt, Ablaufzeit, Eintrags-UID und eine Markierung für neue Wählereignisse.
 
 Der Abgleich liest die Telefonbücher und identifiziert das Zielbuch nach ID und Name.
-Vorhandene persönliche Nummern werden nicht kopiert. Eigene Einträge werden über
-persistierte Kennung, UID, Nummer und einfache Inhaltsprüfung zugeordnet. Zusätzliche
+Alle lesbaren Telefonbücher fließen mit normalisierten Nummern in den Dublettenabgleich ein.
+Bei einem Lesefehler wird vor Schreibzugriffen abgebrochen. Vorhandene persönliche
+Nummern werden nicht kopiert. Eigene Einträge werden über den vorab gespeicherten
+Kontaktnamen, UID, Nummer und einfache Inhaltsprüfung zugeordnet. Gleiche Namen mit
+unterschiedlichen Nummern sind erlaubt; bei unklaren Schreibantworten wird die
+Kombination aus Name und Nummer abgeglichen. Eine zusätzliche SQLite-Tabelle speichert
+die neuen Anzeigenamen, alte Einträge behalten ihre bisherige Zuordnung. Zusätzliche
 persönliche Inhalte, geänderte Namen, Nummern oder VIP-Kennzeichnungen führen zur
 Abgabe der Verwaltung. Es gibt weder einen Komplettimport noch ein Ersetzen von Büchern.
 
 ## Fehler und Wiederanlauf
 
 Unklare Antworten bleiben als lokaler Zustand erhalten. Der nächste Abgleich sucht
-die persistierte Kennung, bevor ein neuer Eintrag erstellt wird. Abgelaufene eigene
+den persistierten Namen und die Nummer, bevor ein neuer Eintrag erstellt wird. Abgelaufene eigene
 Einträge werden gezielt nach UID gelöscht. Nicht mehr vorhandene Einträge werden
 aus dem lokalen Zustand entfernt. Widersprüchliche Kennungen bleiben unangetastet.
 

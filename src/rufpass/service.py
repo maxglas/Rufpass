@@ -55,6 +55,7 @@ class Store:
         self.db.row_factory = sqlite3.Row
         self.db.executescript("""
             CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS contact_names (number TEXT PRIMARY KEY, name TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS grants (
                 number TEXT PRIMARY KEY, marker TEXT NOT NULL UNIQUE,
                 last_dial REAL NOT NULL, expires REAL NOT NULL, uid INTEGER,
@@ -80,7 +81,12 @@ class Store:
                 (number, f"Rufpass automatisch {datetime.fromtimestamp(now):%Y-%m-%d} {uuid.uuid4().hex}", now, now + ttl_days * 86400))
 
     def rows(self):
-        return self.db.execute("SELECT * FROM grants ORDER BY expires, last_dial").fetchall()
+        return self.db.execute("""SELECT grants.*, COALESCE(contact_names.name, grants.marker) AS contact_name
+            FROM grants LEFT JOIN contact_names USING(number) ORDER BY expires, last_dial""").fetchall()
+
+    def set_contact_name(self, number, name):
+        with self.db:
+            self.db.execute("INSERT OR REPLACE INTO contact_names VALUES (?, ?)", (number, name))
 
     def set_uid(self, number, uid):
         with self.db:
@@ -89,11 +95,12 @@ class Store:
     def forget(self, number):
         with self.db:
             self.db.execute("DELETE FROM grants WHERE number=?", (number,))
+            self.db.execute("DELETE FROM contact_names WHERE number=?", (number,))
 
 
 def is_owned(contact, row, normalize):
     """A matching marker alone does not authorize deleting an edited contact."""
-    if contact.findtext("person/realName") != row["marker"]:
+    if contact.findtext("person/realName") != row["contact_name"]:
         return False
     if contact.findtext("category") not in (None, "", "0"):
         return False
@@ -134,7 +141,10 @@ class Engine:
         target_size = len(snapshot.contacts)
         for row in self.store.rows():
             matches = [(uid, contact) for uid, contact in snapshot.contacts.items()
-                       if contact.findtext("person/realName") == row["marker"]]
+                       if contact.findtext("person/realName") == row["contact_name"]
+                       and (row["contact_name"] == row["marker"] or any(
+                           self.normalize(node.text or "") == row["number"]
+                           for node in contact.findall("telephony/number")))]
             if len(matches) > 1:
                 LOG.error("Mehrdeutige Rufpass-Kennung im Telefonbuch; keine Änderung an diesem Kontakt.")
                 continue
@@ -177,8 +187,14 @@ class Engine:
                 if row["uid"] is not None:
                     # A fresh call permits recreating a removed grant, with uncertain replies reconciled by marker.
                     self.store.set_uid(row["number"], None)
-                # Marker was persisted before this request; uncertain replies are reconciled next time.
-                uid = router.create(row["marker"], row["number"])
+                if row["contact_name"] == row["marker"]:
+                    date_match = re.search(r"\d{4}-\d{2}-\d{2}", row["marker"])
+                    created = date_match[0] if date_match else datetime.fromtimestamp(row["last_dial"]).date().isoformat()
+                    row = dict(row)
+                    row["contact_name"] = f"Rufpass {created} Name unbekannt"
+                    self.store.set_contact_name(row["number"], row["contact_name"])
+                # Persist the exact name before writing, including when the reply gets lost.
+                uid = router.create(row["contact_name"], row["number"])
                 self.store.set_uid(row["number"], uid)
                 snapshot.known.add(row["number"])
                 target_size += 1

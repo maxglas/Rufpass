@@ -106,7 +106,7 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(self.store.rows()[0]["uid"], 101)
         name = self.router.contacts[101].findtext("person/realName")
         expected_date = datetime.fromtimestamp(self.now).date().isoformat()
-        self.assertRegex(name, rf"^Rufpass automatisch {expected_date} [0-9a-f]{{32}}$")
+        self.assertRegex(name, rf"^Rufpass {expected_date} Name unbekannt$")
 
     def test_repeated_call_extends_expiry_without_duplicate_or_router_write(self):
         self.create_grant()
@@ -117,6 +117,34 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(row["marker"], original_marker)
         self.assertEqual(row["expires"], self.now + 2 * 86400 + 30 * 86400)
         self.assertEqual(self.router.created, 1)
+
+    def test_names_are_persisted_and_equal_names_for_other_numbers_are_safe(self):
+        self.create_grant()
+        self.engine.dial("+493000000002", self.now)
+        self.engine.sync(self.router, self.now)
+        self.assertEqual(self.router.created, 2)
+        names = [root.findtext("person/realName") for root in self.router.contacts.values()]
+        self.assertEqual(names[0], names[1])
+        self.assertTrue(names[0].endswith(" Name unbekannt"))
+        self.engine.sync(self.router, self.now + 31 * 86400)
+        self.assertEqual(self.router.deleted, [101, 102])
+
+    def test_legacy_contact_name_is_kept_and_managed(self):
+        self.engine.dial(self.number, self.now)
+        marker = self.store.rows()[0]["marker"]
+        self.router.contacts[101] = contact(marker, self.number, 101)
+        self.engine.sync(self.router, self.now)
+        self.assertEqual(self.router.created, 0)
+        self.engine.sync(self.router, self.now + 31 * 86400)
+        self.assertEqual(self.router.deleted, [101])
+
+    def test_unreadable_phonebook_prevents_creation(self):
+        self.engine.dial(self.number, self.now)
+        with patch.object(self.router, "snapshot", side_effect=OSError("synthetic read failure")):
+            with self.assertRaises(OSError):
+                self.engine.sync(self.router, self.now)
+        self.assertEqual(self.router.created, 0)
+        self.assertIsNone(self.store.rows()[0]["uid"])
 
     def test_known_personal_contact_is_not_copied_or_modified(self):
         self.router.other_numbers.add(self.number)
@@ -161,7 +189,7 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(self.store.rows()[0]["uid"], 101)
         name = self.router.contacts[101].findtext("person/realName")
         expected_date = datetime.fromtimestamp(self.now).date().isoformat()
-        self.assertRegex(name, rf"^Rufpass automatisch {expected_date} [0-9a-f]{{32}}$")
+        self.assertRegex(name, rf"^Rufpass {expected_date} Name unbekannt$")
 
     def test_delete_timeout_is_reconciled_without_deleting_other_contacts(self):
         self.create_grant()
@@ -243,7 +271,7 @@ class EngineTests(unittest.TestCase):
 
     def test_duplicate_markers_are_not_deleted(self):
         self.create_grant()
-        marker = self.store.rows()[0]["marker"]
+        marker = self.store.rows()[0]["contact_name"]
         self.router.contacts[102] = contact(marker, self.number, 102)
         with self.assertLogs("rufpass", level="ERROR"):
             self.engine.sync(self.router, self.now + 31 * 86400)
@@ -282,6 +310,30 @@ class RouterTests(unittest.TestCase):
         snapshot = router.snapshot()
         self.assertEqual(set(snapshot.contacts), {9})
         self.assertEqual(snapshot.known, {"+493000000001"})
+
+
+    @patch("rufpass.router.FritzPhonebook")
+    @patch("rufpass.router.FritzConnection")
+    def test_all_books_are_checked_with_normalized_numbers(self, connection_class, books_class):
+        books = books_class.return_value
+        books.phonebook_ids = [0, 1, 2]
+        books.phonebook_info.side_effect = [
+            {"name": name, "url": f"http://example.invalid/{index}"}
+            for index, name in enumerate(("Privat", "Rufpass", "Online"))]
+        roots = []
+        for name, number in (("Privat", "030 0000-0001"), ("Rufpass", None),
+                             ("Online", "00493000000002")):
+            book = ET.Element("phonebook", name=name)
+            if number:
+                book.append(contact("Bekannt", number, 9))
+            response = unittest.mock.MagicMock()
+            response.__enter__.return_value.content = ET.tostring(book)
+            roots.append(response)
+        connection_class.return_value.session.get.side_effect = roots
+        router = Router(config("synthetic.sqlite3"), lambda value: normalize_number(value, "49", "30"))
+        snapshot = router.snapshot()
+        self.assertEqual(snapshot.contacts, {})
+        self.assertEqual(snapshot.known, {"+493000000001", "+493000000002"})
 
 
 class ConfigTests(unittest.TestCase):
