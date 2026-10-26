@@ -20,5 +20,6 @@ Begründung und passenden Tests sind leichter zu prüfen.
 
 Tests nach Installation: `python -m unittest discover -s tests -v`. Sie verwenden
 synthetische Daten und simulierte Schnittstellen. Gerätetests und automatisierte
-Tests ausdrücklich unterscheiden. Die aktuelle Diagnose enthält keine Schreibfunktionen.
+Tests ausdrücklich unterscheiden. check/monitor bleiben lesend; probe legt
+einen markierten temporären Testkontakt an und entfernt nur diesen nach Identitätsprüfung.
 Die Lizenz für öffentliche Beiträge muss vor der öffentlichen Freigabe festgelegt werden.

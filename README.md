@@ -16,7 +16,8 @@ Rufpass soll diese Lücke schließen, ohne dass jede selbst gewählte Nummer dau
 in deinem persönlichen Telefonbuch landen muss.
 
 > **Entwicklungsstand: erste Diagnoseversion.** `rufpass check` prüft den lesenden
-> Telefonbuchzugriff; `rufpass monitor` erkennt ausgehende Wählversuche. Automatische
+> Telefonbuchzugriff; `rufpass monitor` erkennt ausgehende Wählversuche. `rufpass probe`
+> prüft das Anlegen und Entfernen eines temporären Testkontakts. Automatische
 > Freigaben und ein dauerhaft installierter Dienst sind noch nicht implementiert.
 > Das Durchstellen einer Nummer aus einem zweiten lokalen Telefonbuch wurde auf
 > einer FRITZ!Box 7690 mit FRITZ!OS 8.25 manuell bestätigt.
@@ -25,7 +26,8 @@ in deinem persönlichen Telefonbuch landen muss.
 
 Die [Ubuntu-Anleitung](docs/diagnostics.md) führt durch Installation,
 Telefonbuchprüfung und einen Testanruf ohne Gesprächsannahme. Benötigt wird Python 3.12
-oder neuer. Die Diagnose führt keine Telefonbuchänderungen durch.
+oder neuer. `check` und `monitor` bleiben lesend; der getrennte Befehl `probe`
+legt einen markierten Testkontakt an und entfernt ihn anschließend wieder.
 
 ## So soll es funktionieren
 
@@ -67,7 +69,8 @@ Cloud-Dienst, MQTT-Broker oder Reverse Proxy ist für die Kernfunktion nicht erf
 **Erstes vorgesehenes Testgerät:** FRITZ!Box 7690 mit FRITZ!OS 8.25.
 Manuell bestätigt ist das Durchstellen von Nummern aus einem zweiten lokalen Telefonbuch.
 Gemeldete Zielumgebung: Ubuntu 24.04.4 LTS mit Python 3.12.3.
-Die Diagnose und automatische Telefonbuchpflege sind dort noch nicht am Gerät geprüft;
+Lesender Telefonbuchzugriff und Live-Erkennung eines Wählversuchs wurden dort ebenfalls
+bestätigt. Schreibtest und automatische Telefonbuchpflege sind noch nicht am Gerät geprüft;
 weitere Modelle sind nicht getestet.
 
 ## Rechte und Grenzen
@@ -87,7 +90,8 @@ soll im Programm umgesetzt werden; sie ersetzt keine Berechtigungsgrenze der Box
 
 - [x] Durchstellen einer Nummer aus einem zweiten lokalen Telefonbuch manuell bestätigen.
 - [x] Lesende Diagnose und Erkennung ausgehender Wählereignisse mit simulierten Schnittstellen testen.
-- [ ] Wählereignisse am Callmonitor prüfen.
+- [x] Lesenden Telefonbuchzugriff und Wählereignisse am Callmonitor prüfen.
+- [ ] Temporären Schreibtest am Gerät durchführen.
 - [ ] Erfassung und Nummernnormalisierung implementieren.
 - [ ] Gezielte Telefonbuchpflege und Ablaufverwaltung implementieren.
 - [ ] Probelauf, automatisierte Tests und Gerätetests durchführen.

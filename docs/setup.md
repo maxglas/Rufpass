@@ -4,10 +4,11 @@
 
 Am 26.10.2026 wurde für eine FRITZ!Box 7690 mit FRITZ!OS 8.25 gemeldet:
 Eine ausschließlich im zweiten lokalen Telefonbuch gespeicherte Nummer wird durchgestellt.
-Der zusätzliche Benutzer ist angelegt; seine Schnittstellenrechte sind noch zu prüfen.
+Lesender TR-064-Zugriff mit dem dedizierten Benutzer und Live-Erkennung eines
+Wählversuchs wurden bestätigt. Schreibrechte sind noch zu prüfen.
 Zielumgebung: Ubuntu 24.04.4 LTS, Python 3.12.3.
 
-Nächster Schritt: [Diagnose installieren und ausführen](diagnostics.md).
+Nächster Schritt: [Kontrollierten Schreibtest ausführen](diagnostics.md#3-schreibrechte-gezielt-prüfen).
 
 ## 1. Sperrregel manuell prüfen
 

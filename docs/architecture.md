@@ -1,7 +1,8 @@
 # Architekturentwurf
 
 Status: Zielarchitektur. Lesende Diagnose und Live-Erkennung sind implementiert;
-automatische Freigaben und SQLite-Verwaltung stehen noch aus. Das Durchstellen
+Ein getrennter temporärer Schreibtest ist implementiert, aber noch nicht am Gerät geprüft.
+Automatische Freigaben und SQLite-Verwaltung stehen noch aus. Das Durchstellen
 einer Nummer aus dem zweiten Telefonbuch wurde manuell bestätigt.
 
 ```mermaid

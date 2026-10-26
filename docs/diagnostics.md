@@ -1,8 +1,9 @@
 # Erste Diagnose auf Ubuntu
 
-Diese Version prüft Telefonbuchzugriff und Live-Wählereignisse. Sie kann keine
-Telefonbucheinträge schreiben, Freigaben speichern oder abgelaufene Freigaben löschen.
-Sie ist noch kein Dienst für den Dauerbetrieb.
+`check` prüft den lesenden Telefonbuchzugriff und `monitor` die Live-Wählereignisse.
+Beide Befehle verändern keine Einträge. Der getrennte Befehl `probe` führt einen
+kontrollierten Schreibtest mit einem temporären Testkontakt durch. Automatische
+Freigaben und ein Dienst für den Dauerbetrieb sind noch nicht implementiert.
 
 ## Installation
 
@@ -70,6 +71,33 @@ einen separaten TCP-Zugang auf Port 1012. Abbruch mit Strg+C.
 Interne Nummern und Wähl-Steuercodes werden in dieser Diagnose nicht ausgewertet.
 Eine erkannte Zielnummer ist noch keine auf Rückrufbarkeit geprüfte Freigabe.
 
+## 3. Schreibrechte gezielt prüfen
+
+Voraussetzung: Zusätzliche lokale Telefonbuch-ID und Name wurden mit `check`
+ermittelt. Der Probelauf mit `monitor` war erfolgreich. Vor dem ersten Schreibtest
+das Ziel-Telefonbuch über die FRITZ!Box-Oberfläche sichern.
+
+Das folgende Beispiel gilt für ein lokales Buch namens **Rufpass mit ID 1**:
+
+```bash
+.venv/bin/rufpass probe --phonebook-id 1 --phonebook Rufpass
+```
+
+Das Kennwort wird erneut verdeckt abgefragt. Der Befehl:
+
+1. Prüft ID und Namen des Telefonbuchs; das Standardbuch mit ID 0 ist gesperrt.
+2. Legt einen neuen Kontakt `Rufpass Schreibtest <Zufallskennung>` an.
+3. Verwendet ausschließlich die interne Rundrufnummer `**9`, ohne sie zu wählen.
+4. Liest den Kontakt über die von der Box gelieferte UID zurück und prüft seine Identität.
+5. Löscht ausschließlich diesen verifizierten Testkontakt und prüft, ob er entfernt ist.
+
+Erwartung: `OK: Testkontakt angelegt, zurückgelesen und wieder entfernt.`
+
+Bestehende Kontakte werden nicht bearbeitet. Bei Abbruch oder unklarer Antwort
+wird das Anlegen nicht automatisch wiederholt. Ein Testkontakt kann dann zurückbleiben;
+sein eindeutiger Name steht in der Ausgabe. Falls vorhanden, ausschließlich diesen
+Kontakt im Zielbuch manuell entfernen. Es gibt keine pauschale Lösch- oder Wiederherstellungsfunktion.
+
 ## Fehler und nächste Schritte
 
 - `check` scheitert: Host, TR-064-Freigabe, Benutzer, Rechte und Kennwort prüfen.
@@ -78,8 +106,8 @@ Eine erkannte Zielnummer ist noch keine auf Rückrufbarkeit geprüfte Freigabe.
 - Verbindung bricht ab: Die Bibliothek versucht kurz erneut zu verbinden; danach
   beendet Rufpass die Diagnose mit Fehlerstatus. Verpasste Wählereignisse sind verloren.
 
-Für die nächste Implementierung genügen Ziel-Telefonbuch-ID, erfolgreiche/fehlgeschlagene
-Prüfung und die Information, ob der erfolglose Wählversuch erkannt wurde.
+Für die nächste Implementierung genügt das Ergebnis des Schreibtests. Bei Fehlern
+zusätzlich angeben, ob der Testkontakt zurückblieb und manuell entfernt wurde.
 Kennwort und vollständige Telefonnummern bleiben lokal.
 
 ## Automatisierte Tests

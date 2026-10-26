@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rufpass"
-version = "0.1.0.dev1"
+version = "0.1.0.dev2"
 description = "Diagnose und geplante automatische Rueckruf-Freigaben fuer die FRITZ!Box"
 readme = "README.md"
 requires-python = ">=3.12"
