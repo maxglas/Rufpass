@@ -12,7 +12,7 @@
 
 Keine Produktivautomatisierung aktivieren, bevor dieser Test erfolgreich war.
 
-## 2. Lenovo-Umgebung klären
+## 2. Laufzeitumgebung klären
 
 - Betriebssystem und vorhandene Docker-/Compose-Nutzung.
 - Gewünschter Installationspfad und übliche Ablage von Konfiguration und Daten.
@@ -34,7 +34,9 @@ Keine Produktivautomatisierung aktivieren, bevor dieser Test erfolgreich war.
 - Kleine Tests mit synthetischen Telefonnummern und simulierten Schnittstellen.
 - Probelauf, anschließend kontrollierter Test am Gerät und erst dann Dauerbetrieb.
 
-Projektname: Rufpass. Lokales Projektverzeichnis: `C:\Projekte\Rufpass`.
+Noch festzulegen sind Laufzeitumgebung und Gültigkeit der Freigaben.
 
-Offen: GitHub-Repository, lokale Projektregistrierung, Lenovo-Umgebung und
-gewünschte Gültigkeit der Freigaben.
+## Veröffentlichungsstand
+
+Es gibt noch keine Installation für Endanwender. Die obigen Schritte dienen der
+technischen Validierung vor der Implementierung.

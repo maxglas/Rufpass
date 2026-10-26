@@ -2,12 +2,13 @@
 
 Kleiner Hintergrunddienst für automatische Rückruf-Freigaben an einer FRITZ!Box.
 
-## Bekannte Umgebung
+## Entwicklungsstand
 
-- FRITZ!Box 7690, FRITZ!OS 8.25.
-- Zielrechner: Lenovo ThinkCentre M910q im Heimnetz mit vorhandenen Caddy- und MQTT-Diensten.
-- Lokale Entwicklung: C:\Projekte\Rufpass.
-- Betriebssystem und Containerverwaltung des Zielrechners sind noch zu klären.
+- Konzeptphase; noch kein lauffähiger Dienst und keine bestätigte Gerätekompatibilität.
+- Erstes vorgesehenes Testgerät: FRITZ!Box 7690, FRITZ!OS 8.25.
+- Zielplattform: dauerhaft laufender Rechner im Heimnetz; konkrete Laufzeitumgebung noch offen.
+- Öffentliche Dokumentation an Anwender und Mitwirkende richten, nicht als internes Chatprotokoll verfassen.
+- Persönliche Installationspfade und Infrastrukturdetails gehören nicht in versionierte Unterlagen.
 
 ## Arbeitsregeln
 

@@ -4,7 +4,7 @@ Status: Vorschlag, noch nicht implementiert oder am Gerät validiert.
 
 ```mermaid
 flowchart LR
-    F[FRITZ!Box Callmonitor] -->|Wählbeginn, TCP 1012| D[Dienst auf Lenovo]
+    F[FRITZ!Box Callmonitor] -->|Wählbeginn, TCP 1012| D[Rufpass im Heimnetz]
     D --> S[(SQLite)]
     D -->|TR-064, authentifiziert| P[Telefonbuch Rückruf-Freigaben]
     P --> R[FRITZ!Box Rufbehandlung]
@@ -28,7 +28,7 @@ flowchart LR
 
 Pro Freigabe: normalisierte Nummer, letzter eigener Wählversuch, Ablaufzeit,
 Telefonbuch-ID, Eintrags-UID und Synchronisationsstatus. Zeitstempel intern in UTC.
-Vorgeschlagene Laufzeit von 30 Tagen ist noch keine bestätigte Nutzervorgabe.
+Die Laufzeit von 30 Tagen ist ein erster Entwurf und noch nicht endgültig festgelegt.
 
 ## Betrieb
 

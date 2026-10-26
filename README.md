@@ -1,57 +1,99 @@
 # Rufpass
 
-Selbst gewählte Telefonnummern automatisch für Rückrufe an der FRITZ!Box freigeben.
+**Wer von dir angerufen wird, darf zurückrufen.**
 
-Lokales Projektverzeichnis: `C:\Projekte\Rufpass`.
+Rufpass soll selbst gewählte Telefonnummern automatisch für Rückrufe an der
+FRITZ!Box freigeben. Für alle anderen unbekannten Nummern bleibt die bestehende
+Sperrregel aktiv.
 
-## Status
+## Warum Rufpass?
 
-Projektvorbereitung. Noch kein lauffähiger Dienst und keine Änderungen an der FRITZ!Box.
-Vor der Implementierung muss ein manueller Test bestätigen, dass die bestehende
-Regel „Nicht im Telefonbuch“ auch ein zusätzliches lokales Telefonbuch berücksichtigt.
+Nur Anrufe aus dem Telefonbuch zuzulassen bringt Ruhe vor Werbeanrufen. Es verhindert
+aber auch erwünschte Rückrufe: Du rufst eine Werkstatt, Arztpraxis oder einen neuen
+Kontakt an, erreichst niemanden und der spätere Rückruf wird blockiert.
 
-## Ausgangslage
+Rufpass soll diese Lücke schließen, ohne dass jede selbst gewählte Nummer dauerhaft
+in deinem persönlichen Telefonbuch landen muss.
 
-- FRITZ!Box 7690 mit FRITZ!OS 8.25.
-- Eingehende Anrufe ohne Telefonbucheintrag werden bereits blockiert.
-- Ein Lenovo ThinkCentre M910q läuft im Heimnetz; Caddy und MQTT sind vorhanden.
-- Betriebssystem, Containerverwaltung und Installationspfad auf dem Lenovo sind noch offen.
+> **Entwicklungsstand: Konzept und technische Vorbereitung.** Es gibt noch keinen
+> lauffähigen Dienst. Die folgenden Funktionen beschreiben das geplante Verhalten.
+> Die Rufbehandlung mit einem zweiten Telefonbuch muss zuerst am Gerät bestätigt werden.
 
-## Geplantes Verhalten
+## So soll es funktionieren
 
-1. Den Wählbeginn externer Anrufe über den Callmonitor erkennen, auch ohne Gesprächsannahme.
-2. Die Zielnummer normalisieren und mit vorhandenen Kontakten abgleichen.
-3. Neue Nummern über TR-064 in ein eigenes lokales Telefonbuch schreiben.
-4. Den letzten eigenen Wählversuch lokal speichern; vorgeschlagene Gültigkeit: 30 Tage.
-5. Nur automatisch angelegte Einträge nach Ablauf entfernen. Persönliche Kontakte bleiben erhalten.
+1. **Du rufst jemanden an.** Rufpass erkennt bereits den Wählversuch, auch wenn niemand abnimmt.
+2. **Die Nummer bekommt einen Rufpass.** Der Dienst speichert sie in einem separaten
+   lokalen FRITZ!Box-Telefonbuch für Rückruf-Freigaben.
+3. **Der Rückruf darf klingeln.** Die FRITZ!Box übernimmt weiterhin die Rufbehandlung.
+4. **Die Freigabe läuft wieder ab.** Geplant sind zeitlich begrenzte Einträge;
+   30 Tage sind der erste Entwurf. Erneutes Wählen verlängert die Freigabe.
 
-Der Dienst verarbeitet ausschließlich Telefonate über diese FRITZ!Box. Ein Rückruf
-von einer anderen oder unterdrückten Nummer wird dadurch nicht freigegeben.
+Persönliche Kontakte sollen unverändert bleiben. Rufpass soll ausschließlich die
+eigenen automatisch angelegten Einträge verwalten.
 
-## Aufbau
+```mermaid
+flowchart LR
+    A[Eigener Wählversuch] --> B[FRITZ!Box Callmonitor]
+    B --> C[Rufpass im Heimnetz]
+    C -->|TR-064| D[Telefonbuch für Rückruf-Freigaben]
+    D --> E[FRITZ!Box erlaubt Rückruf]
+```
 
-Ein kleiner Python-Hintergrunddienst auf dem Lenovo verbindet sich mit dem
-Callmonitor der FRITZ!Box (TCP 1012). Änderungen am Telefonbuch erfolgen getrennt
-davon über die authentifizierte TR-064-Schnittstelle. SQLite speichert Freigaben,
-deren Ablaufzeit und die IDs der vom Dienst angelegten Einträge.
+## Technischer Ansatz
 
-Falls Docker Compose vorhanden ist, wird der Dienst als eigener Container mit
-persistentem Datenverzeichnis betrieben; andernfalls ist unter Linux systemd möglich.
-Caddy und MQTT sind für die Kernfunktion nicht erforderlich.
+Ein kleiner Python-Hintergrunddienst soll auf einem dauerhaft laufenden Rechner im
+Heimnetz arbeiten. Der Callmonitor der FRITZ!Box meldet Wählversuche über TCP-Port
+1012. Die authentifizierte TR-064-Schnittstelle dient zur Verwaltung des zusätzlichen
+Telefonbuchs. SQLite speichert Freigaben und Ablaufzeiten lokal.
+
+Für den Betrieb sind Docker Compose oder unter Linux systemd vorgesehen. Ein
+Cloud-Dienst, MQTT-Broker oder Reverse Proxy ist für die Kernfunktion nicht erforderlich.
+
+## Voraussetzungen und Kompatibilität
+
+- Eine FRITZ!Box mit Telefoniefunktion, Callmonitor und passenden TR-064-Aktionen.
+- Eine bestehende Sperrregel für Anrufer ohne Telefonbucheintrag.
+- Ein zusätzliches **lokales** Telefonbuch sowie ein Benutzer mit Telefonie-Rechten.
+- Ein dauerhaft laufender Rechner mit Netzwerkzugriff auf die FRITZ!Box.
+
+**Erstes vorgesehenes Testgerät:** FRITZ!Box 7690 mit FRITZ!OS 8.25.
+Die Kompatibilität ist noch nicht am Gerät bestätigt; weitere Modelle sind noch nicht getestet.
 
 ## Rechte und Grenzen
 
 Ein eigener FRITZ!Box-Benutzer benötigt Telefonie-Rechte (Phone). Diese sind nicht
 auf ein einzelnes Telefonbuch begrenzbar. Die Einschränkung auf die Ziel-Telefonbuch-ID
-wird im Programm umgesetzt, nicht durch eine entsprechende Berechtigung der Box.
-Keine Zugangsdaten oder echten Telefonnummern in Git speichern.
+soll im Programm umgesetzt werden; sie ersetzt keine Berechtigungsgrenze der Box.
 
-Der Callmonitor liefert Live-Ereignisse. Während eines Ausfalls verpasste erfolglose
-Wählversuche lassen sich nicht zuverlässig aus der normalen Anrufliste nachholen.
-Bereits angelegte Telefonbucheinträge bleiben bei einem Dienstausfall bestehen.
+- Erfasst werden ausschließlich Anrufe, die über die überwachte FRITZ!Box laufen.
+- Rückrufe von einer anderen oder unterdrückten Nummer werden nicht freigegeben.
+- Während eines Ausfalls verpasste erfolglose Wählversuche lassen sich nicht
+  zuverlässig aus der normalen Anrufliste nachholen.
+- Bereits angelegte Telefonbucheinträge bleiben bei einem Dienstausfall bestehen.
+- Zugangsdaten und echte Telefonnummern gehören nicht ins Repository oder in Fehlerberichte.
 
-## Weiterführend
+## Nächste Schritte
+
+- [ ] Verhalten der Sperrregel mit einem zweiten Telefonbuch bestätigen.
+- [ ] Wählereignisse am Callmonitor prüfen.
+- [ ] Erfassung und Nummernnormalisierung implementieren.
+- [ ] Gezielte Telefonbuchpflege und Ablaufverwaltung implementieren.
+- [ ] Probelauf, automatisierte Tests und Gerätetests durchführen.
+- [ ] Betrieb und Installation dokumentieren.
+
+## Dokumentation und Mitarbeit
 
 - [Architektur und Implementierungsgrenzen](docs/architecture.md)
 - [Manueller Vorabtest und nächste Schritte](docs/setup.md)
-- [Quellen](docs/research.md)
+- [Recherche und Quellen](docs/research.md)
+- [Mitwirken und Fehler melden](CONTRIBUTING.md)
+
+## Autor
+
+Ein Projekt von [Maximilian Glas](https://github.com/maxglas).
+
+Rufpass ist ein unabhängiges Projekt und kein offizielles Produkt von FRITZ!.
+
+## Lizenz
+
+Die Lizenz wird vor der öffentlichen Freigabe festgelegt und als `LICENSE` ergänzt.
