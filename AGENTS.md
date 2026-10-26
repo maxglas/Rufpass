@@ -6,7 +6,8 @@ Kleiner Hintergrunddienst für automatische Rückruf-Freigaben an einer FRITZ!Bo
 
 - Konzeptphase; noch kein lauffähiger Dienst und keine bestätigte Gerätekompatibilität.
 - Erstes vorgesehenes Testgerät: FRITZ!Box 7690, FRITZ!OS 8.25.
-- Zielplattform: dauerhaft laufender Rechner im Heimnetz; konkrete Laufzeitumgebung noch offen.
+- Umsetzung in Python beschlossen; keine parallele .NET-Implementierung. Siehe docs/adr-001-python.md.
+- Erstes Betriebsziel: Ubuntu auf einem dauerhaft laufenden Rechner im Heimnetz; genaue OS-Version und Dienstinstallation noch offen.
 - Öffentliche Dokumentation an Anwender und Mitwirkende richten, nicht als internes Chatprotokoll verfassen.
 - Persönliche Installationspfade und Infrastrukturdetails gehören nicht in versionierte Unterlagen.
 

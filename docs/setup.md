@@ -14,7 +14,8 @@ Keine Produktivautomatisierung aktivieren, bevor dieser Test erfolgreich war.
 
 ## 2. Laufzeitumgebung klären
 
-- Betriebssystem und vorhandene Docker-/Compose-Nutzung.
+- Erstes Betriebsziel ist Ubuntu. Genaue Ubuntu-Version und vorhandene Python-Version ermitteln.
+- Vorgeschlagener erster Dienstbetrieb: Python in eigener virtueller Umgebung mit systemd.
 - Gewünschter Installationspfad und übliche Ablage von Konfiguration und Daten.
 - Erreichbarkeit der Box aus dem späteren Dienst bzw. Container.
 
@@ -34,7 +35,7 @@ Keine Produktivautomatisierung aktivieren, bevor dieser Test erfolgreich war.
 - Kleine Tests mit synthetischen Telefonnummern und simulierten Schnittstellen.
 - Probelauf, anschließend kontrollierter Test am Gerät und erst dann Dauerbetrieb.
 
-Noch festzulegen sind Laufzeitumgebung und Gültigkeit der Freigaben.
+Python ist als Implementierung festgelegt; siehe [ADR-001](adr-001-python.md). Noch festzulegen sind die genaue Zielumgebung und die Gültigkeit der Freigaben.
 
 ## Veröffentlichungsstand
 

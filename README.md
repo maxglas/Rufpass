@@ -83,6 +83,7 @@ soll im Programm umgesetzt werden; sie ersetzt keine Berechtigungsgrenze der Box
 
 ## Dokumentation und Mitarbeit
 
+- [Architekturentscheidung: Python](docs/adr-001-python.md)
 - [Architektur und Implementierungsgrenzen](docs/architecture.md)
 - [Manueller Vorabtest und nächste Schritte](docs/setup.md)
 - [Recherche und Quellen](docs/research.md)
