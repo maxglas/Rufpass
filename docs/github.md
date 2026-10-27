@@ -1,60 +1,58 @@
-# Öffentliche Veröffentlichung vorbereiten
+# Öffentlicher Projektstand
 
-## Stand der Prüfung vom 27.10.2026
+## Abschlussprüfung vom 27.10.2026
 
-Der lokale Stand enthält README, getrennte Voraussetzungen, Erstinstallation,
-Updates, systemd-Betrieb, Diagnose, Architektur und Beitragsanleitung.
-Der Quellcode verwendet `fritzconnection` (MIT); Pakete werden regulär über pip
-installiert und nicht als kopierter Fremdcode in diesem Repository ausgeliefert.
+- [x] Das Repository ist öffentlich: [maxglas/Rufpass](https://github.com/maxglas/Rufpass).
+- [x] Der veröffentlichte Stand `7dc92d6` enthält README, Beispielbild, Voraussetzungen,
+  Installation, systemd-Betrieb, Diagnose, Changelog und Beitragsanleitung.
+- [x] Projektlizenz Apache-2.0 mit Commons Clause v1.0 ist in `LICENSE`, Dokumentation
+  und Paket berücksichtigt. GitHub erkennt diese Kombination als „Other“.
+- [x] GitHub Actions für diesen Stand ist unter Ubuntu und Windows erfolgreich:
+  Paketinstallation, Unit-Tests und CLI-Start; unter Ubuntu zusätzlich Shell-Syntaxprüfung.
+  [Geprüfter Testlauf](https://github.com/maxglas/Rufpass/actions/runs/40492124052).
+- [x] Der Betreiber bestätigt die Installation als systemd-Dienst und den einwandfreien
+  laufenden Ubuntu-Betrieb. [Validierungsstand](setup.md).
+- [x] Eine heuristische Prüfung von 149 historischen Git-Blobs fand keine Treffer für
+  die geprüften GitHub-Token-, private-Schlüssel-, AWS-Schlüssel-, privaten IP- und
+  Benutzerpfadmuster. Dies ist kein vollständiger Geheimnisscan und keine Garantie
+  für die Abwesenheit sämtlicher personenbezogener Daten.
 
-Eine heuristische Prüfung von 95 historischen Git-Blobs fand keine Treffer für
-typische GitHub-Tokens, private Schlüssel, AWS-Zugriffsschlüssel sowie die geprüften
-privaten IP-/Benutzerpfadmuster. Dies ist kein vollständiger Geheimnisscan und keine
-Garantie, dass sämtliche personenbezogenen Daten ausgeschlossen sind.
-Die Git-Autorenhistorie enthält eine private E-Mail-Adresse; ihre Veröffentlichung
-muss vor einem Sichtbarkeitswechsel bewusst entschieden werden. Eine Änderung
-zukünftiger Git-Einstellungen ändert alte Commits nicht.
+Die Git-Autorenhistorie enthält eine private E-Mail-Adresse. Für zukünftige Commits
+kann eine GitHub-`noreply`-Adresse verwendet werden; alte Commits ändern sich dadurch
+nicht. Eine Umschreibung der veröffentlichten Historie erfolgt nur auf gesonderten
+Auftrag und entfernt bereits angefertigte Kopien nicht.
 
-GitHub-Sichtbarkeit, Actions-Ergebnisse, Branch-Regeln und private Sicherheitsmeldungen
-konnten mit dem verfügbaren Zugriff nicht verifiziert werden. Lokale Testresultate
-sind kein Nachweis für einen erfolgreichen GitHub-Actions-Lauf.
+Der frühe Teststand bleibt in der README sichtbar. Ein erfolgreicher Wikidata-Live-Treffer,
+ein vollständiger 365-Tage-Ablauf sowie andere Router und Raspberry-Pi-Hardware sind
+weiterhin nicht bestätigt. Branch-Regeln und private Sicherheitsmeldungen wurden nicht
+verifiziert; sie sind keine Voraussetzung für ein öffentliches Repository.
 
-## Vor dem öffentlichen Schalten abschließen
+## Optionale GitHub-Einstellungen
 
-- [x] Projektlizenz Apache-2.0 mit Commons Clause v1.0 als `LICENSE` angelegt,
-  Paketmetadaten und Installer berücksichtigen sie. [Lizenz und Nutzung](licensing.md).
-- [ ] Git-Autoren-E-Mail bewusst öffentlich zulassen oder Historie vor der Freigabe
-  kontrolliert bereinigen. Historie nicht ohne gesonderte Entscheidung umschreiben.
-- [ ] Ubuntu-Dienst einmal nach der [Betriebsanleitung](operations.md) installieren:
-  Autostart aktiv, neue Freigabe sichtbar, Rückruf möglich, erneuter Anruf ohne Dublette.
-  Neustart des Dienstes prüfen und Ergebnis im [Validierungsstand](setup.md) festhalten.
-- [ ] Den tatsächlichen GitHub-Actions-Lauf des zu veröffentlichenden Commits prüfen.
-  Der Workflow liegt unter `.github/workflows/tests.yml`.
-- [ ] Vorbereitete Änderungen bewusst pushen; Agenten pushen nur auf ausdrücklichen Auftrag.
-- [ ] Auf GitHub **Private vulnerability reporting** einschalten, damit der Meldeweg
-  aus [SECURITY.md](../SECURITY.md) funktioniert.
-- [ ] Die zu veröffentlichende Historie abschließend auf vertrauliche Daten prüfen,
-  einschließlich eventueller späterer Commits, Anhänge und Branches.
-- [ ] Erst danach die Sichtbarkeit in den Repository-Einstellungen ändern. Diese
-  Anleitung führt keinen Push und keinen Sichtbarkeitswechsel aus.
+### Vertrauliche Sicherheitsmeldungen
 
-Die noch offene Geräteprüfung verhindert nicht technisch ein öffentliches Repository.
-Bis zu ihrem Abschluss muss der frühe Teststand aber sichtbar bleiben; eine belastbare
-Ubuntu-Dienstempfehlung kann daraus noch nicht abgeleitet werden.
+„Private vulnerability reporting“ ermöglicht vertrauliche Meldungen an den Maintainer,
+ohne Schwachstellendetails in öffentlichen Issues zu veröffentlichen. Der Status dieser
+Einstellung ist nicht bestätigt. Aktivierung: **Settings → Advanced Security → Private
+vulnerability reporting → Enable**. Je nach GitHub-Oberfläche liegt der Bereich unter
+„Security and quality“. Das ist der bevorzugte Meldeweg aus [SECURITY.md](../SECURITY.md);
+dort ist auch ein Ersatzweg beschrieben.
 
-## Präsentation auf GitHub
+[GitHub-Anleitung](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/configure-vulnerability-reporting/configure-for-a-repository).
 
-- Name: **Rufpass**.
-- Kurzbeschreibung: **Wer von dir angerufen wird, darf zurückrufen. Automatische
-  Rückruf-Freigaben für die FRITZ!Box.**
-- Topics: `fritzbox`, `telephony`, `call-monitor`, `tr-064`, `python`, `self-hosted`.
-- Autor: [Maximilian Glas](https://github.com/maxglas).
-- Nach der Veröffentlichung im eigenen Profil anheften und ein erstes als Vorabversion
-  markiertes Release mit tatsächlich geprüfter Kompatibilität erstellen.
-- Eine kurze Demo mit synthetischen Nummern ist hilfreich, aber kein Freigabeblocker.
-  CI-Badges erst ergänzen, wenn tatsächliche CI-Ergebnisse feststehen; die Lizenz
-  stets mit ihrer Commons-Clause-Bedingung kennzeichnen.
+### Auffindbarkeit und Präsentation
 
-Ein Logo, eine Website, Docker und ein Windows-Dienst sind für die erste öffentliche
-Version nicht erforderlich. Priorität haben verständliche Installation, nachvollziehbarer
-Teststand und sichere Handhabung von Zugangsdaten.
+Die Kurzbeschreibung ist vorhanden: „Angerufene Telefonnummern automatisch freigeben“.
+Topics und ein GitHub-Release sind zum Prüfzeitpunkt noch nicht vorhanden. Optional:
+
+- Im Zahnrad neben **About** die Topics `fritzbox`, `telephony`, `call-monitor`,
+  `tr-064`, `python` und `self-hosted` setzen.
+- Die Kurzbeschreibung präzisieren: **Wer von dir angerufen wird, darf zurückrufen.
+  Automatische Rückruf-Freigaben für die FRITZ!Box.**
+- Im eigenen Profil anheften und bei Bedarf ein als Vorabversion markiertes Release
+  erstellen. Versionsangaben im Changelog sind bisher keine GitHub-Releases.
+- Optional unter den Repository-Einstellungen ein Social-Preview-Bild hinterlegen,
+  das beim Teilen des Links verwendet werden kann.
+
+Diese Punkte verbessern die Präsentation; sie sind keine offenen Installationsschritte.
+Agenten committen nur lokal und pushen ausschließlich auf ausdrücklichen Auftrag.

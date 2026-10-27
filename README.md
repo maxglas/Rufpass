@@ -120,8 +120,8 @@ git pull --ff-only
 sudo bash scripts/install.sh
 ```
 
-`/pfad/zum/Rufpass` durch das eigene Projektverzeichnis ersetzen. Solange das
-Repository privat ist, erfordert das Klonen/Pullen eine GitHub-Anmeldung.
+`/pfad/zum/Rufpass` durch das eigene Projektverzeichnis ersetzen. Das öffentliche
+Repository kann über HTTPS ohne GitHub-Anmeldung geklont und aktualisiert werden.
 
 Die Ersteinrichtung fragt Host und Benutzer ab, **direkt danach das Kennwort dieses
 Benutzers**, anschließend Telefonbuchname und -ID, Landes-/Ortsvorwahl und Gültigkeit. Standard: Buch **Rufpass**, ID **1**,
@@ -190,9 +190,10 @@ lässt sie sich abschalten. Wikidata ist kein vollständiges Telefonverzeichnis:
 
 **Version 0.2.5:** Automatische Freigaben, Ablaufverwaltung, Wiederanlauf und
 Ubuntu-Installer sind implementiert und mit simulierten Schnittstellen getestet.
-Die vollständige systemd-Installation und der Dauerbetrieb am Gerät sind noch zu
-bestätigen; diese Version ist ein früher Teststand. Ein erfolgreicher Live-Namenstreffer
-bei Wikidata ist ebenfalls noch nicht bestätigt; bisher traten Timeout/HTTP 502 auf.
+Die Installation als systemd-Dienst und der laufende Betrieb auf Ubuntu sind vom
+Betreiber am 27.10.2026 als einwandfrei bestätigt. Diese Version bleibt ein früher
+Teststand; ein vollständiger 365-Tage-Ablauf ist damit nicht nachgewiesen. Ein erfolgreicher
+Live-Namenstreffer bei Wikidata ist noch nicht bestätigt; bisher traten Timeout/HTTP 502 auf.
 
 Am Gerät bestätigt: FRITZ!Box **7690**, FRITZ!OS **8.25**, Ubuntu **24.04.4 LTS**,
 Python **3.12.3**. Geprüft wurden das Durchstellen von Nummern aus dem zweiten Buch,

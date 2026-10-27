@@ -19,9 +19,13 @@ maßgeblich. Die früheren Einzeltests bleiben unter [Diagnose](diagnostics.md) 
 
 Nummernnormalisierung, SQLite-Verwaltung, Verlängerung, gezieltes Entfernen,
 Wiederanlauf und Ubuntu-Installer sind implementiert und lokal simuliert getestet.
-Der vollständige Dienstbetrieb an dieser Box ist als nächster End-to-End-Test
-noch zu bestätigen. Dazu die Installation einmal ausführen und eine kontrollierte,
-noch nicht gespeicherte externe Nummer wählen und zurückrufen lassen.
+Die Installation als systemd-Dienst und der laufende Betrieb auf Ubuntu wurden
+vom Betreiber am 27.10.2026 als einwandfrei bestätigt. Daraus werden keine zusätzlich
+einzeln bestätigten Neustart-, Langzeit- oder 365-Tage-Ablauftests abgeleitet.
+
+GitHub Actions ist für Commit `7dc92d6` unter Ubuntu und Windows erfolgreich:
+Paketinstallation, Unit-Tests und CLI-Start; unter Ubuntu zusätzlich Shell-Syntaxprüfung.
+[Geprüfter Testlauf](https://github.com/maxglas/Rufpass/actions/runs/40492124052).
 
 Unter Windows sind die simulierten Tests einschließlich der nativen Instanzsperre
 lokal erfolgreich. Ein vollständiger Windows-Lauf mit der FRITZ!Box, andere Router

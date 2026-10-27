@@ -26,5 +26,6 @@ Python-Dienst für automatische Rückruf-Freigaben an einer FRITZ!Box.
 - Bestätigt: Positivliste berücksichtigt zweites lokales Buch, lesender TR-064-Zugriff,
   Live-Wählversuche, gezieltes Anlegen/Rücklesen/Entfernen und sichtbarer externer Testkontakt.
 - Bestätigt: Leeres Zielbuch kann zusätzlich zwölf interne XML-Einträge liefern.
-- Automatische Freigaben, Ablaufverwaltung und systemd-Installation sind implementiert,
-  ihr gemeinsamer Dauerbetrieb am Gerät ist noch zu bestätigen.
+- Der Betreiber bestätigt am 27.10.2026 die systemd-Installation und den einwandfreien
+  laufenden Ubuntu-Betrieb. Keine zusätzlichen Neustart- oder Langzeittests daraus ableiten.
+- GitHub Actions für Commit 7dc92d6 unter Ubuntu und Windows erfolgreich.

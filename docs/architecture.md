@@ -2,7 +2,8 @@
 
 Status: Automatische Freigabe und Linux-Dienst sind implementiert und mit simulierten
 Schnittstellen getestet. Die grundlegenden FRITZ!Box-Aktionen und der sichtbare
-Testkontakt sind am Gerät bestätigt. Der vollständige Dauerbetrieb ist noch zu prüfen.
+Testkontakt sind am Gerät bestätigt. Der Betreiber bestätigt am 27.10.2026 auch
+die systemd-Installation und den einwandfreien laufenden Ubuntu-Betrieb.
 
 ```mermaid
 flowchart LR

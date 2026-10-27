@@ -12,6 +12,9 @@ kein Nachweis eines veröffentlichten GitHub-Releases oder eines Gerätetests.
 
 ### Dokumentation
 
+- Öffentlichen Repository-Status, erfolgreichen GitHub-Actions-Lauf und vom Betreiber
+  bestätigten Ubuntu-Dienstbetrieb dokumentiert; überholte Freigabecheckliste aktualisiert.
+
 - Freigegebenes, anonymisiertes Beispielbild des Rufpass-Telefonbuchs in die README aufgenommen.
 - Changelog ab Version 0.2.0 ergänzt und seine laufende Pflege in den Projekt- und Beitragsregeln verankert.
 

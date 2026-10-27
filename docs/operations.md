@@ -20,9 +20,8 @@ cd Rufpass
 ```
 
 Bei einem bestehenden Checkout stattdessen in dieses Verzeichnis wechseln und
-`git pull --ff-only` ausführen. Solange das Repository privat ist, sind GitHub-Anmeldedaten
-erforderlich, etwa SSH oder ein Zugriffstoken. Das normale GitHub-Kennwort funktioniert
-für Git über HTTPS nicht. Zugangsdaten nicht in die Repository-URL schreiben.
+`git pull --ff-only` ausführen. Für das öffentliche Repository ist beim Klonen und
+Aktualisieren über HTTPS keine GitHub-Anmeldung erforderlich.
 
 ### Installer starten
 
@@ -89,8 +88,9 @@ gelöscht. Die frühere Projekt-`.venv` wird durch den Dienstinstaller nicht akt
 
 ## Erfolg prüfen
 
-Die vollständige Erstinstallation und der Dauerbetrieb sind am Gerät noch zu bestätigen.
-Die folgenden Prüfungen sind der noch offene End-to-End-Test.
+Die Dienstinstallation und der laufende Ubuntu-Betrieb sind vom Betreiber am
+27.10.2026 als einwandfrei bestätigt. Die folgenden Schritte helfen nach der eigenen
+Installation und bei der Fehlerdiagnose.
 
 ```bash
 sudo systemctl status rufpass --no-pager
