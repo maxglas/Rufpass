@@ -6,6 +6,7 @@ Python-Dienst für automatische Rückruf-Freigaben an einer FRITZ!Box.
 
 - Nur lokal committen. Nicht pushen, außer der Nutzer beauftragt den konkreten Push ausdrücklich.
 - README.md und docs/ vor Implementierungsarbeiten lesen.
+- Anwenderrelevante Änderungen im CHANGELOG.md unter „Unveröffentlicht“ mitpflegen. Bei einer neuen Paketversion die zugehörigen Einträge unter deren Versionsnummer und Datum übernehmen; keine unbestätigten Releases oder Gerätetests behaupten.
 - Kleine Umsetzung ohne Webframework, MQTT oder Cloud-Abhängigkeit.
 - check, monitor und validate bleiben lesend. Keine Schreibtest-/Beispielkontakt-Funktion ins Produkt aufnehmen.
 - run verwaltet nur eigene, in SQLite nachverfolgte Kontakte im zusätzlichen lokalen Zielbuch.

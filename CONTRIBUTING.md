@@ -22,6 +22,18 @@ erst ein tatsächlicher Workflow-Lauf bestätigt dessen Ergebnis.
 manuelle Kontakte prüfen. Niemals Buch-Import oder Buch-Wiederherstellung als
 Abkürzung für Einzeländerungen verwenden.
 
+## Changelog pflegen
+
+Anwenderrelevante Änderungen im [Changelog](CHANGELOG.md) unter **Unveröffentlicht**
+eintragen: neue Funktionen, Verhaltensänderungen, Fehlerkorrekturen, entfernte
+Funktionen sowie wichtige Installations-, Dokumentations- und Lizenzänderungen.
+Kurz die Auswirkung beschreiben; reine interne Aufräumarbeiten brauchen keinen Eintrag.
+
+Bei einer neuen Paketversion die passenden Einträge in einen Abschnitt mit derselben
+Versionsnummer wie in `pyproject.toml` und dem Datum `JJJJ-MM-TT` verschieben.
+Neue Einträge stehen oben. Nur tatsächlich bestätigte Test- und Veröffentlichungsstände
+nennen; ein Versionscommit allein bestätigt kein GitHub-Release.
+
 ## Sicherheitsprobleme
 
 Vertrauliche Schwachstellen nach [SECURITY.md](SECURITY.md) melden, nicht mit

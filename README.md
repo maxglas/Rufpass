@@ -225,6 +225,7 @@ unter Windows gibt es einen [kurzen Einstieg](docs/windows.md).
 `check` und `monitor` bleiben rein lesend. Automatische Freigaben führt der neue
 Befehl `run` aus; der Installer richtet diesen als Dienst ein.
 
+- [Änderungen nach Version](CHANGELOG.md)
 - [Voraussetzungen an FRITZ!Box und Rechner](docs/prerequisites.md)
 - [Manuelle Python-Ausführung unter Windows](docs/windows.md)
 - [Installation, Betrieb, Konfiguration und Fehlerbehebung](docs/operations.md)
