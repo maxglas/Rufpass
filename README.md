@@ -6,6 +6,10 @@ Rufpass erkennt selbst gewählte Telefonnummern an der FRITZ!Box und trägt sie 
 eine begrenzte Zeit in ein zusätzliches Telefonbuch ein. Mit der vorhandenen
 Sperrregel „Nicht im Telefonbuch“ dürfen diese Nummern zurückrufen.
 
+![Rufpass-Telefonbuch in der FRITZ!Box mit fiktiven Kontakten und einer Rufnummer als Anzeigename](docs/images/rufpass-telefonbuch.png)
+
+*Beispieldarstellung mit ausschließlich fiktiven Kontaktdaten.*
+
 ## Warum Rufpass?
 
 Nur Anrufe aus dem Telefonbuch zuzulassen bringt Ruhe vor Werbeanrufen. Es verhindert

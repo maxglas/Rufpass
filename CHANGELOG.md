@@ -12,6 +12,7 @@ kein Nachweis eines veröffentlichten GitHub-Releases oder eines Gerätetests.
 
 ### Dokumentation
 
+- Freigegebenes, anonymisiertes Beispielbild des Rufpass-Telefonbuchs in die README aufgenommen.
 - Changelog ab Version 0.2.0 ergänzt und seine laufende Pflege in den Projekt- und Beitragsregeln verankert.
 
 ## 0.2.5 – 2026-10-27
