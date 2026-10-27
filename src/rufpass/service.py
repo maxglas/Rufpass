@@ -206,16 +206,28 @@ class Engine:
 
 @contextlib.contextmanager
 def instance_lock(path):
-    if os.name != "posix":
-        raise ValueError("Der unterstützte Dienstbetrieb benötigt Linux.")
-    import fcntl
     Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(str(path) + ".lock", "a") as lock:
-        try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            raise ValueError("Für diese Datenbank läuft bereits eine Rufpass-Instanz.") from None
-        yield
+    with open(str(path) + ".lock", "a+b") as lock:
+        if os.name == "nt":
+            import msvcrt
+            # Lock byte zero even for a new, empty file; no Windows dependency needed.
+            lock.seek(0)
+            try:
+                msvcrt.locking(lock.fileno(), msvcrt.LK_NBLCK, 1)
+            except OSError:
+                raise ValueError("Für diese Datenbank läuft bereits eine Rufpass-Instanz.") from None
+            try:
+                yield
+            finally:
+                lock.seek(0)
+                msvcrt.locking(lock.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                raise ValueError("Für diese Datenbank läuft bereits eine Rufpass-Instanz.") from None
+            yield
 
 
 def validate(path):

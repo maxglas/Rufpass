@@ -22,4 +22,8 @@ Der vollständige Dienstbetrieb an dieser Box ist als nächster End-to-End-Test
 noch zu bestätigen. Dazu die Installation einmal ausführen und eine kontrollierte,
 noch nicht gespeicherte externe Nummer wählen und zurückrufen lassen.
 
+Unter Windows sind die simulierten Tests einschließlich der nativen Instanzsperre
+lokal erfolgreich. Ein vollständiger Windows-Lauf mit der FRITZ!Box, andere Router
+und Raspberry-Pi-Hardware sind nicht bestätigt.
+
 Die Sprachentscheidung ist in [ADR-001](adr-001-python.md) dokumentiert.

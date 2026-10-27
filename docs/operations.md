@@ -42,12 +42,12 @@ Bei der Ersteinrichtung folgende Angaben im Terminal eingeben:
 | --- | --- |
 | FRITZ!Box | `fritz.box`; alternativ LAN-IPv4-Adresse |
 | FRITZ!Box-Benutzer | `rufpass`; das Konto in der FRITZ!Box |
+| Kennwort dieses Benutzers | Direkt nach dem Namen, verdeckte Eingabe; kein allgemeines FRITZ!Box-Kennwort |
 | Telefonbuchname | `Rufpass`; exakt wie in der Oberfläche |
 | Telefonbuch-ID | `1`; bei abweichender ID den tatsächlichen Wert verwenden |
 | Landesvorwahl | `49`, ohne `+` oder `00` |
 | Ortsvorwahl | Eigene Ortsvorwahl, beispielsweise `030`; für die Speicherung wird die führende Null entfernt |
 | Gültigkeit | `365` Tage seit dem letzten eigenen Wählversuch |
-| Kennwort | FRITZ!Box-Kennwort dieses Benutzers; verdeckte Eingabe |
 
 Enter übernimmt eine angezeigte Vorgabe. Kennwort und tatsächliche Nummern bleiben
 im lokalen Terminal und gehören nicht in Issues oder Screenshots. Die standardmäßig

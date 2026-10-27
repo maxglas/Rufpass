@@ -9,7 +9,7 @@ from pathlib import Path
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
 
-from rufpass.config import Config, configure, load_config
+from rufpass.config import Config, configure, load_config, DEFAULT_CONFIG, DEFAULT_DATABASE
 from rufpass.router import Router, Snapshot
 from rufpass.service import Engine, Store, normalize_number, instance_lock
 
@@ -378,6 +378,33 @@ class ConfigTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 configure(str(path))
 
+    def test_default_paths_match_platform(self):
+        if os.name == "nt":
+            expected = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "Rufpass"
+            self.assertEqual(Path(DEFAULT_CONFIG), expected / "config.toml")
+            self.assertEqual(Path(DEFAULT_DATABASE), expected / "state.sqlite3")
+        else:
+            self.assertEqual(DEFAULT_CONFIG, "/etc/rufpass/config.toml")
+            self.assertEqual(DEFAULT_DATABASE, "/var/lib/rufpass/state.sqlite3")
+
+    def test_password_is_requested_immediately_after_user_and_names_that_user(self):
+        events = []
+        answers = iter(["", "test-user", "", "", "", "030", ""])
+        def answer(prompt):
+            events.append(("input", prompt))
+            return next(answers)
+        def password(prompt):
+            events.append(("password", prompt))
+            return "synthetic-secret"
+        with tempfile.TemporaryDirectory() as directory:
+            with patch("builtins.input", side_effect=answer), \
+                    patch("rufpass.config.getpass.getpass", side_effect=password), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                configure(str(Path(directory) / "config.toml"))
+        self.assertEqual([kind for kind, _ in events[:4]], ["input", "input", "password", "input"])
+        self.assertIn("test-user", events[2][1])
+        self.assertIn("Telefonbuch", events[3][1])
+
     def test_omitted_ttl_defaults_to_365_and_explicit_value_is_preserved(self):
         values = vars(config("synthetic.sqlite3")).copy()
         values.pop("ttl_days")
@@ -395,7 +422,6 @@ class ConfigTests(unittest.TestCase):
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 replace(config("synthetic.sqlite3"), **changes)
 
-    @unittest.skipUnless(os.name == "posix", "flock is exercised on Linux")
     def test_second_instance_is_rejected_and_lock_is_released(self):
         with tempfile.TemporaryDirectory() as directory:
             path = str(Path(directory) / "state.sqlite3")

@@ -43,7 +43,8 @@ den persistierten Namen und die Nummer, bevor ein neuer Eintrag erstellt wird. A
 Einträge werden gezielt nach UID gelöscht. Nicht mehr vorhandene Einträge werden
 aus dem lokalen Zustand entfernt. Widersprüchliche Kennungen bleiben unangetastet.
 
-Eine Linux-Dateisperre verhindert zwei gleichzeitig schreibende Dienstinstanzen
+Eine native Dateisperre (POSIX `flock`, unter Windows `msvcrt.locking`) verhindert
+zwei gleichzeitig schreibende Instanzen
 für dieselbe Datenbank. Die Datenbank ist an Host, Zielbuch-ID und -Name gebunden.
 Ein Verlust der Datenbank führt nicht zur automatischen Übernahme alter Telefonbucheinträge.
 
@@ -59,6 +60,10 @@ Konfiguration liegt unter `/etc/rufpass`, SQLite unter `/var/lib/rufpass`, Pytho
 Abhängigkeiten unter `/opt/rufpass`. Der Dienst hat einen eigenen Benutzer und
 Schreibzugriff nur auf seinen Zustandsbereich. Kein eingehender Web-Port erforderlich.
 
-Die erste vollständige Version zielt auf Ubuntu mit Python 3.12. Deutsche Orts- und
+Der Python-Prozess kann unter Linux und Windows laufen; Python 3.12 ist die
+Mindestversion. Der mitgelieferte Dienstinstaller ist für Ubuntu/systemd vorgesehen.
+Unter Windows liegen Konfiguration und SQLite standardmäßig unter `%LOCALAPPDATA%/Rufpass`.
+Raspberry Pi und andere Linux-Systeme sind mit passender Laufzeit mögliche Ziele,
+aber noch nicht am Gerät geprüft. Deutsche Orts- und
 Landesvorwahlen sind die zuerst unterstützte Nummernkonvention. Docker, MQTT und
 eine Weboberfläche sind keine Voraussetzungen und werden derzeit nicht mitgeliefert.

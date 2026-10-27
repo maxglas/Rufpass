@@ -14,8 +14,8 @@ bash -n scripts/install.sh
 ```
 
 Tests verwenden synthetische Daten, temporäre SQLite-Dateien und simulierte
-Schnittstellen. Der Linux-Sperrentest wird auf anderen Plattformen übersprungen.
-Der Workflow unter `.github/workflows/tests.yml` führt die Suite unter Linux aus;
+Schnittstellen. Der Sperrentest prüft die native Implementierung des jeweiligen Systems.
+Der Workflow unter `.github/workflows/tests.yml` ist für Linux und Windows vorbereitet;
 erst ein tatsächlicher Workflow-Lauf bestätigt dessen Ergebnis.
 
 Änderungen klein halten und die Folgen für Wiederanlauf, eindeutige Zuordnung und

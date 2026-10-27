@@ -13,6 +13,8 @@ from datetime import date
 from importlib.metadata import version
 from xml.etree import ElementTree as ET
 
+from rufpass.config import DEFAULT_CONFIG
+
 from fritzconnection import FritzConnection, FritzMonitor
 from fritzconnection.lib.fritzphonebook import FritzPhonebook
 from fritzconnection.core.exceptions import FritzArrayIndexError
@@ -225,7 +227,7 @@ def main(argv=None) -> int:
                             ("validate", "Dienstkonfiguration und Schnittstellen lesend prüfen"),
                             ("status", "Lokalen Zustand ohne Telefonnummern anzeigen")):
         command = commands.add_parser(name, help=help_text)
-        command.add_argument("--config", default="/etc/rufpass/config.toml")
+        command.add_argument("--config", default=DEFAULT_CONFIG)
     check = commands.add_parser("check", help="Telefonbuchzugriff und Ziel-ID prüfen")
     monitor = commands.add_parser("monitor", help="Ausgehende Wählversuche live erkennen")
     probe = commands.add_parser("probe", help="Testkontakt anlegen und prüfen; standardmäßig wieder entfernen")
@@ -264,7 +266,7 @@ def main(argv=None) -> int:
               "Telefonie-Rechte und Kennwort prüfen. Bei monitor den Callmonitor mit #96*5* aktivieren. "
               "Kennwörter und vollständige Rufnummern nicht in Fehlerberichte kopieren.", file=sys.stderr)
         if args.command in ("run", "configure", "validate", "status"):
-            print("Dienstkonfiguration unter /etc/rufpass/config.toml und Zugriffsrechte prüfen.",
+            print("Konfigurationsdatei (--config) und Zugriffsrechte prüfen.",
                   file=sys.stderr)
         return 1
 

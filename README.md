@@ -15,15 +15,72 @@ Kontakt an, erreichst niemanden und der spätere Rückruf wird blockiert.
 Rufpass ergänzt deine vorhandene Positivliste automatisch. Persönliche Kontakte
 bleiben erhalten und müssen nicht durch vorübergehende Kontakte ergänzt werden.
 
-## Installation auf Ubuntu
+## Systeme und Laufzeit
 
-### 1. Voraussetzungen vorbereiten
+Rufpass ist eine Python-Anwendung für Rechner im Heimnetz. Auf dem Rechner werden
+**Python 3.12 oder neuer** und die mit pip installierten Projektabhängigkeiten benötigt.
+Linux, etwa auf einem Mini-PC oder **Raspberry Pi**, ist als Dauerläufer geeignet.
+Auch **Windows** kann den Python-Prozess ausführen. Der mitgelieferte Dienstinstaller
+und die ausführliche Anleitung beziehen sich auf **Linux/Ubuntu mit systemd**;
+sie sind keine Beschränkung der Python-Anwendung auf Ubuntu.
 
-- Ubuntu **24.04 LTS**, Python **3.12 oder neuer**, systemd und `sudo`-Berechtigung.
-- Zusätzliches lokales FRITZ!Box-Telefonbuch, beispielsweise `Rufpass`, mit ID größer 0.
-- FRITZ!Box-Benutzer mit Telefonie-Rechten und erlaubtem Zugriff für Anwendungen (TR-064).
-- Callmonitor durch einmaliges Wählen von `#96*5*` an einem verbundenen Telefon aktivieren.
-- Die vorhandene Positivliste muss Nummern aus dem zusätzlichen Telefonbuch durchlassen.
+Auf Router-Seite ist eine **FRITZ!Box mit Telefonie, Callmonitor, TR-064 und lokalen
+Telefonbüchern** erforderlich. Die aktuelle Anleitung orientiert sich an **FRITZ!OS 8.x**.
+Entscheidend sind diese Funktionen, nicht das Modell 7690. Andere Modelle und
+FRITZ!OS-Stände sind nicht pauschal als getestet zu verstehen.
+
+**Tatsächlich am Gerät geprüft:** FRITZ!Box 7690, FRITZ!OS 8.25, Ubuntu 24.04.4 LTS,
+Python 3.12.3. Andere Router, Raspberry Pi und der vollständige Windows-Betrieb
+sind noch nicht am Gerät geprüft. Lokale Windows-Tests verwenden simulierte Router.
+
+## Installation auf Linux/Ubuntu
+
+### 1. FRITZ!Box vorbereiten
+
+**Zusätzliches Telefonbuch anlegen.** Unter **Telefonie → Telefonbuch** ein neues
+**lokales** Telefonbuch namens `Rufpass` erstellen. Ein anderer Name ist möglich,
+muss dann bei der Einrichtung exakt angegeben werden. Das bisherige Telefonbuch
+bleibt bestehen. **Der Installer erstellt das Telefonbuch nicht automatisch.**
+Die Telefonbuch-ID muss größer als 0 sein; normalerweise erhält das zweite Buch ID 1.
+Die vorhandene Rufsperre für unbekannte Anrufer muss Nummern aus diesem Buch zulassen.
+
+**Eigenen FRITZ!Box-Benutzer anlegen.** Unter **System → FRITZ!Box-Benutzer → Benutzer
+hinzufügen** einen aktiven Benutzer `rufpass` mit eigenem Kennwort erstellen. Die
+benötigte Berechtigung heißt **Sprachnachrichten, Faxnachrichten, FRITZ!App Fon und
+Anrufliste**. Zusätzliche Rechte für allgemeine FRITZ!Box-Einstellungen, NAS oder
+Smart Home sind dafür nicht erforderlich. Bei der Installation wird das Kennwort
+**dieses Benutzers** abgefragt; das allgemeine FRITZ!Box-Kennwort wird nicht benötigt.
+Die Telefonie-Rechte lassen sich an der Box nicht auf das zusätzliche Buch begrenzen;
+Rufpass beschränkt seine Änderungen selbst auf dieses Buch.
+
+**Zugriff für Anwendungen erlauben.** In den Netzwerkeinstellungen der Box den Zugriff
+für Anwendungen/Apps (TR-064) zulassen. Über diese angemeldete Schnittstelle liest
+Rufpass vorhandene Telefonnummern und verwaltet die eigenen Freigabeeinträge.
+
+**Callmonitor freigeben.** Der Callmonitor ist eine eingebaute FRITZ!Box-Schnittstelle,
+die laufende Telefonie-Ereignisse wie Klingeln, Wählbeginn und Auflegen mit Rufnummern
+meldet. Rufpass braucht den **Wählbeginn**, damit auch erfolglose Anrufe eine Rückruf-Freigabe
+erzeugen. Aktiviert wird er einmalig durch Wählen von **`#96*5*`** an einem direkt
+mit der FRITZ!Box verbundenen Telefon. Auf dem Rechner wird dafür nichts zusätzlich installiert.
+
+**Was diese Freigabe bedeutet:** Der Callmonitor stellt Anrufmetadaten über **TCP 1012**
+ohne eigene Benutzeranmeldung bereit; er überträgt keine Gesprächsinhalte.
+Wer diesen Port im Netz erreichen kann, kann diese Telefonie-Ereignisse mitlesen.
+Das Kennwort des Benutzers `rufpass` schützt diesen separaten Zugang nicht.
+Nur im vertrauenswürdigen Heimnetz verwenden und keine Portweiterleitung ins Internet
+einrichten. Mit `#96*4*` lässt sich der Callmonitor wieder abschalten; dann kann
+Rufpass keine neuen Wählversuche erkennen.
+
+Die [ausführlichen Voraussetzungen](docs/prerequisites.md) erläutern Netzwerkzugriff
+und Einstellungen. Telefonbuch, Benutzer und Freigaben werden **manuell vorbereitet**;
+der Installer prüft deren Erreichbarkeit, richtet sie aber nicht in der Box ein.
+
+### 2. Python und Systempakete vorbereiten
+
+Auf Linux Python **3.12 oder neuer** bereitstellen. Für die folgende Ubuntu-Anleitung
+werden außerdem systemd und `sudo`-Berechtigung vorausgesetzt. Ubuntu 24.04 ist die
+bisher am Gerät verwendete Distribution, nicht die einzige mögliche Linux-Plattform.
+Auch ein Raspberry Pi benötigt ein Betriebssystem mit passender Python-Version.
 
 Systempakete auf Ubuntu einmalig installieren:
 
@@ -36,7 +93,7 @@ python3 --version
 Die [vollständigen Voraussetzungen](docs/prerequisites.md) erklären die FRITZ!Box-Einstellungen,
 Benutzerrechte und Netzwerkanforderungen. Es wird nichts auf der FRITZ!Box installiert.
 
-### 2. Rufpass-Code und Dienst installieren
+### 3. Rufpass-Code und Dienst installieren
 
 Neuer Checkout:
 
@@ -57,8 +114,8 @@ sudo bash scripts/install.sh
 `/pfad/zum/Rufpass` durch das eigene Projektverzeichnis ersetzen. Solange das
 Repository privat ist, erfordert das Klonen/Pullen eine GitHub-Anmeldung.
 
-Die Ersteinrichtung fragt Host, Benutzer, Telefonbuchname und -ID, Landes-/Ortsvorwahl,
-Gültigkeit und Kennwort im lokalen Terminal ab. Standard: Buch **Rufpass**, ID **1**,
+Die Ersteinrichtung fragt Host und Benutzer ab, **direkt danach das Kennwort dieses
+Benutzers**, anschließend Telefonbuchname und -ID, Landes-/Ortsvorwahl und Gültigkeit. Standard: Buch **Rufpass**, ID **1**,
 Benutzer **rufpass**, **365 Tage** Gültigkeit. Die Ortsvorwahl muss zum eigenen Anschluss passen.
 
 Der Installer prüft die vorbereitete Laufzeit, installiert Rufpass samt Python-Abhängigkeiten
@@ -67,7 +124,7 @@ Er aktiviert Autostart und startet die Freigabeverwaltung direkt. Die frühere P
 wird dafür nicht verwendet. Updates erfolgen mit `git pull --ff-only` und demselben Installer;
 gespeicherte Konfiguration und Freigabedaten bleiben erhalten.
 
-### 3. Dienst und Rückruf prüfen
+### 4. Dienst und Rückruf prüfen
 
 ```bash
 sudo systemctl status rufpass --no-pager
@@ -116,7 +173,7 @@ lässt sie sich abschalten. Wikidata ist kein vollständiges Telefonverzeichnis:
 
 ## Stand und Kompatibilität
 
-**Version 0.2.3:** Automatische Freigaben, Ablaufverwaltung, Wiederanlauf und
+**Version 0.2.4:** Automatische Freigaben, Ablaufverwaltung, Wiederanlauf und
 Ubuntu-Installer sind implementiert und mit simulierten Schnittstellen getestet.
 Die vollständige systemd-Installation und der Dauerbetrieb am Gerät sind noch zu
 bestätigen; diese Version ist ein früher Teststand. Ein erfolgreicher Live-Namenstreffer
@@ -131,8 +188,9 @@ Die automatische Nummernaufbereitung ist zunächst auf deutsche Anschlüsse mit
 konfigurierter Ortsvorwahl ausgerichtet; internationale Nummern werden mit `+`
 oder `00` erkannt. Interne Nummern, Steuercodes, kurze Dienstnummern und ausgewählte
 deutsche Sonderrufnummern werden übersprungen. Eine weltweite Rufnummernvalidierung
-ist nicht enthalten. Windows-Dienst, Docker-Paket und Weboberfläche gehören nicht
-zu dieser Version.
+ist nicht enthalten. Ein fertiger Windows-Dienstinstaller, Docker-Paket und
+Weboberfläche gehören nicht zu dieser Version. Zur manuellen Python-Ausführung
+unter Windows gibt es einen [kurzen Einstieg](docs/windows.md).
 
 ## Rechte, Daten und Grenzen
 
@@ -141,7 +199,8 @@ zu dieser Version.
 - Der Dienst verwaltet nur eigene Einträge im konfigurierten zusätzlichen Buch.
   Telefonbücher werden niemals komplett ersetzt oder wiederhergestellt.
 - Rufnummern und Ablaufdaten liegen lokal in SQLite; Zugangsdaten in einer Datei,
-  die nur root und der Dienstbenutzer lesen können. Normale Logs enthalten keine Telefonnummern.
+  die bei der Ubuntu-Dienstinstallation nur root und der Dienstbenutzer lesen können.
+  Unter Windows liegen die Dateien im Profil des ausführenden Benutzers; dort gelten die Windows-Dateirechte. Normale Logs enthalten keine Telefonnummern.
 - Erfasst werden nur Telefonate über die überwachte FRITZ!Box. Andere oder unterdrückte
   Rückrufnummern werden dadurch nicht bekannt. Andere vorhandene Rufsperren gelten weiterhin.
 - Während Rufpass aus ist, verpasste Wählversuche können nicht nachgeholt werden.
@@ -155,7 +214,8 @@ zu dieser Version.
 `check` und `monitor` bleiben rein lesend. Automatische Freigaben führt der neue
 Befehl `run` aus; der Installer richtet diesen als Dienst ein.
 
-- [Voraussetzungen an FRITZ!Box und Ubuntu](docs/prerequisites.md)
+- [Voraussetzungen an FRITZ!Box und Rechner](docs/prerequisites.md)
+- [Manuelle Python-Ausführung unter Windows](docs/windows.md)
 - [Installation, Betrieb, Konfiguration und Fehlerbehebung](docs/operations.md)
 - [Diagnosebefehle und kontrollierte Schreibtests](docs/diagnostics.md)
 - [Architektur](docs/architecture.md)
@@ -172,4 +232,7 @@ Rufpass ist ein unabhängiges Projekt und kein offizielles Produkt von FRITZ!.
 
 ## Lizenz
 
-Die Lizenz wird vor der öffentlichen Freigabe festgelegt und als `LICENSE` ergänzt.
+Das Lizenzziel erlaubt Nutzung und Anpassungen auch im eigenen Betrieb, soll aber
+die kommerzielle Verwertung von Rufpass selbst ausschließen. Die endgültige
+Lizenzfassung ist noch offen; [Anforderungen und Kandidat](docs/licensing.md).
+Eine `LICENSE` wird vor der öffentlichen Freigabe ergänzt.

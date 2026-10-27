@@ -1,4 +1,4 @@
-"""Configuration for the Linux background service; no credentials in logs."""
+"""Configuration for foreground execution and services; no credentials in logs."""
 
 import getpass
 import json
@@ -8,6 +8,15 @@ import tomllib
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
+
+
+if os.name == "nt":
+    data_dir = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "Rufpass"
+    DEFAULT_CONFIG = str(data_dir / "config.toml")
+    DEFAULT_DATABASE = str(data_dir / "state.sqlite3")
+else:
+    DEFAULT_CONFIG = "/etc/rufpass/config.toml"
+    DEFAULT_DATABASE = "/var/lib/rufpass/state.sqlite3"
 
 
 @dataclass(frozen=True)
@@ -20,7 +29,7 @@ class Config:
     country_code: str
     area_code: str
     ttl_days: int = 365
-    database: str = "/var/lib/rufpass/state.sqlite3"
+    database: str = DEFAULT_DATABASE
     reverse_lookup: bool = True
 
     def __post_init__(self):
@@ -59,18 +68,21 @@ def configure(path: str) -> None:
         return value or default
 
     print("Rufpass-Ersteinrichtung. Zugangsdaten bleiben auf diesem Rechner.")
+    host = ask("FRITZ!Box-Hostname oder IPv4", "fritz.box")
+    user = ask("FRITZ!Box-Benutzer", "rufpass")
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", getpass.GetPassWarning)
+        password = getpass.getpass(f"FRITZ!Box-Kennwort für den Benutzer '{user}': ")
     values = dict(
-        host=ask("FRITZ!Box-Hostname oder IPv4", "fritz.box"),
-        user=ask("FRITZ!Box-Benutzer", "rufpass"),
+        host=host,
+        user=user,
+        password=password,
         phonebook_name=ask("Name des zusätzlichen Telefonbuchs", "Rufpass"),
         phonebook_id=int(ask("ID dieses Telefonbuchs", "1")),
         country_code=ask("Landesvorwahl ohne +", "49"),
         area_code=ask("Ortsvorwahl, z. B. 030").removeprefix("0"),
         ttl_days=int(ask("Gültigkeit in Tagen", "365")),
     )
-    with warnings.catch_warnings():
-        warnings.simplefilter("error", getpass.GetPassWarning)
-        values["password"] = getpass.getpass("FRITZ!Box-Kennwort: ")
     config = Config(**values)
     destination.parent.mkdir(parents=True, exist_ok=True)
     # Exclusive creation prevents accidental replacement during concurrent setup.
@@ -79,4 +91,4 @@ def configure(path: str) -> None:
         for key, value in vars(config).items():
             file.write(f"{key} = {json.dumps(value, ensure_ascii=False)}\n")
     print("Namenssuche ist aktiviert: Unbekannte Wählziele werden an Wikidata übertragen. Abschaltbar mit reverse_lookup = false.")
-    print("Konfiguration gespeichert. Die Installation prüft jetzt die Schnittstellen.")
+    print("Konfiguration gespeichert. Schnittstellen mit rufpass validate prüfen.")

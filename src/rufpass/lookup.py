@@ -32,7 +32,7 @@ class NameLookup:
             SERVICE wikibase:label { bd:serviceParam wikibase:language "de,en". }
         } GROUP BY ?item ?itemLabel LIMIT 2''' % (digits, digits)
         request = Request("https://query.wikidata.org/sparql?" + urlencode({"query": query}), headers={
-            "User-Agent": "Rufpass/0.2.3 (https://github.com/maxglas/Rufpass)",
+            "User-Agent": "Rufpass/0.2.4 (https://github.com/maxglas/Rufpass)",
             "Accept": "application/sparql-results+json",
         })
         try:
