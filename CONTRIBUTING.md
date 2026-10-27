@@ -37,4 +37,6 @@ Keine echten Nummern, Telefonbuch-Exporte, Konfigurationsdateien, Datenbanken,
 Zugangsdaten oder unbereinigten Logs veröffentlichen. Für Tests nur eigene oder
 ausdrücklich dafür freigegebene Rufnummern verwenden.
 
-Die Lizenz für öffentliche Beiträge muss vor der öffentlichen Freigabe festgelegt werden.
+Beiträge werden unter der Projektlizenz Apache-2.0 mit Commons Clause v1.0
+eingereicht. Mit einem Beitrag bestätigst du, dafür die nötigen Rechte zu haben.
+Die maßgeblichen Bedingungen stehen in [LICENSE](LICENSE); Abhängigkeiten behalten ihre Lizenzen.

@@ -87,6 +87,17 @@ class LookupTests(unittest.TestCase):
         lookup.find("+493000000002")
         self.assertEqual(urlopen.call_count, 1)
 
+    @patch("rufpass.lookup.time.monotonic", return_value=100)
+    @patch("rufpass.lookup.urlopen")
+    def test_malformed_retry_header_cannot_block_grant_creation(self, urlopen, clock):
+        for headers in ({"Retry-After": "9" * 5000}, None):
+            with self.subTest(headers_present=headers is not None):
+                urlopen.side_effect = HTTPError("redacted", 429, "limited", headers, io.BytesIO())
+                lookup = NameLookup()
+                with self.assertLogs("rufpass", level="WARNING"):
+                    self.assertIsNone(lookup.find(NUMBER))
+                self.assertEqual(lookup.next_request, 160)
+
 
 if __name__ == "__main__":
     unittest.main()

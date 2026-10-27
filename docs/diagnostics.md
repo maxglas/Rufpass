@@ -1,177 +1,88 @@
-# Erste Diagnose auf Ubuntu
+# Betriebsdiagnose
 
-`check` prüft den lesenden Telefonbuchzugriff und `monitor` die Live-Wählereignisse.
-Beide Befehle verändern keine Einträge. Der getrennte Befehl `probe` führt einen
-kontrollierten Schreibtest durch. Der neue automatische Dienst wird nach der
-[Betriebsanleitung](operations.md) installiert. Diese Diagnosebefehle bleiben getrennt davon.
+Rufpass stellt lesende Diagnosebefehle bereit. Sie legen keine Beispielkontakte an
+und ändern keine Telefonbucheinträge. Freigaben erzeugt ausschließlich `run` beim
+Verarbeiten tatsächlicher Wählversuche. Zur Einrichtung siehe [Betrieb](operations.md).
+
+## Installierten Dienst prüfen
+
+Unter Ubuntu nach der Dienstinstallation:
+
+```bash
+sudo systemctl status rufpass --no-pager
+sudo journalctl -u rufpass -n 30 --no-pager
+sudo /opt/rufpass/current/bin/rufpass validate
+sudo /opt/rufpass/current/bin/rufpass status
+```
+
+`validate` liest die konfigurierte Telefonbuchumgebung und prüft die Erreichbarkeit
+des Callmonitors. Es bestätigt keine Schreibrechte. `status` zeigt ausschließlich
+Zähler aus der lokalen Datenbank; ohne Router-Abgleich sind sie kein Live-Zustand.
 
 ## Optionale Diagnoseumgebung
 
-Diese separate Projekt-`.venv` ist nur für manuelle Diagnosebefehle nötig. Der
-Dienstinstaller verwendet seine eigene Umgebung unter `/opt/rufpass`. Zuerst die
-[Voraussetzungen](prerequisites.md) erfüllen.
-
-Die folgenden Befehle auf dem Ubuntu-Rechner im Heimnetz ausführen.
-Ein vorhandenes Checkout zuerst mit `git pull --ff-only` aktualisieren;
-ansonsten das Repository klonen. Bei einem privaten Repository ist GitHub-Anmeldung erforderlich.
+Bei Entwicklung oder Fehlersuche kann im Checkout eine eigene Umgebung verwendet werden:
 
 ```bash
-git clone https://github.com/maxglas/Rufpass.git
-cd Rufpass
-sudo apt update
-sudo apt install python3-venv
 python3 -m venv .venv
 .venv/bin/python -m pip install .
 ```
 
-Nach späteren Quellcode-Updates erneut `.venv/bin/python -m pip install .` ausführen.
-Das System-Python wird nicht mit Projektpaketen verändert.
+Zuvor die [Voraussetzungen](prerequisites.md) erfüllen. Die Projekt-`.venv` ist
+unabhängig von der Dienstumgebung unter `/opt/rufpass`. Für Windows siehe
+[manuelle Ausführung](windows.md); dort liegen die Programme unter `.venv\Scripts`.
 
 ## 1. Telefonbuchzugriff prüfen
-
-Der FRITZ!Box-Benutzer benötigt die Berechtigung für Sprach-/Faxnachrichten,
-FRITZ!App Fon und Anrufliste. Ein angelegter Benutzer allein bestätigt diese Rechte noch nicht.
-Zusätzlich muss der Zugriff für Anwendungen (TR-064) zugelassen sein.
 
 ```bash
 .venv/bin/rufpass check --host fritz.box --user rufpass --phonebook Rufpass
 ```
 
-Falls das zweite Telefonbuch anders heißt, den **exakten Namen** hinter `--phonebook`
-angeben; Namen mit Leerzeichen in Anführungszeichen setzen. Wenn `fritz.box` nicht
-aufgelöst wird, die LAN-IP der FRITZ!Box hinter `--host` angeben.
+Das Kennwort des angegebenen FRITZ!Box-Benutzers wird verdeckt abgefragt. Der Befehl
+zeigt Buchnamen und IDs, zählt normale Kontakte im Zielbuch und weist interne
+XML-Einträge getrennt aus. Er zeigt keine Kontaktnamen oder Telefonnummern.
 
-Das Kennwort wird verdeckt im Terminal abgefragt, nicht als Kommandozeilenargument.
-Die Ausgabe enthält Telefonbuchnamen und IDs sowie die Anzahl der normalen Kontakte
-im Zielbuch. Interne Einträge der FRITZ!Box werden getrennt ausgewiesen.
-Sie enthält keine Kontaktnamen oder Telefonnummern.
+`--phonebook` benötigt den exakten Namen; Namen mit Leerzeichen in Anführungszeichen
+setzen. Falls `fritz.box` nicht erreichbar ist, die LAN-IPv4-Adresse mit `--host` angeben.
+Ein leeres Buch kann zwölf interne Geräte-/Rundrufeinträge im XML enthalten, obwohl
+die Kontaktansicht leer ist. Ein erfolgreicher Lesezugriff bestätigt noch keine Schreibrechte.
 
-Erwarteter Abschluss: `OK: Ziel-Telefonbuch lesbar, ID …, … Kontakte.`
-Darunter steht die Anzahl zusätzlicher interner Einträge im XML. Die Schnittstelle
-kann interne Geräte- oder Rundrufnummern liefern, die in der normalen Kontaktansicht
-nicht erscheinen. Ein leeres Buch kann daher 0 Kontakte und dennoch interne Einträge enthalten.
-Die frühere Diagnose zählte beides ungetrennt als Einträge; das war irreführend.
-Das heruntergeladene XML wird zusätzlich auf den erwarteten Telefonbuchnamen geprüft.
-Dieser Test bestätigt **Leserechte**, noch keine Schreibrechte oder lokale Buchart.
-
-## 2. Wählversuch ohne Annahme prüfen
-
-An einem mit der FRITZ!Box verbundenen Telefon einmal `#96*5*` wählen, um den
-Callmonitor zu aktivieren. Danach auf Ubuntu starten:
+## 2. Callmonitor prüfen
 
 ```bash
 .venv/bin/rufpass monitor --host fritz.box
 ```
 
-Sobald `Verbunden` erscheint, über die FRITZ!Box eine kontrollierte externe Nummer
-anrufen und wieder auflegen, **ohne dass die Gegenstelle abnimmt**.
-Erwartung: `Wählversuch erkannt: [maskiert]`.
-Damit prüfen wir den für Rufpass entscheidenden Wählbeginn, unabhängig von CONNECT.
+Nach `Verbunden` eine eigene externe Nummer über die FRITZ!Box wählen. Erwartung:
+`Wählversuch erkannt: [maskiert]`. Gesprächsannahme ist nicht erforderlich. Abbruch
+mit Strg+C. Dieser Befehl speichert keine Anrufe und legt keine Freigaben an.
+Der Callmonitor benötigt keine Benutzeranmeldung; für seine Freigabe und die
+Sicherheitswirkung siehe [Voraussetzungen](prerequisites.md).
 
-Bei Bedarf für den eigenen lokalen Vergleich:
+Für einen lokalen Vergleich kann `--show-numbers` ergänzt werden. Solche Ausgaben
+enthalten echte Nummern und gehören nicht in öffentliche Fehlerberichte.
 
-```bash
-.venv/bin/rufpass monitor --host fritz.box --show-numbers
-```
+## Befehlsübersicht
 
-Diese Option zeigt vollständige Zielnummern im Terminal. Keine solchen Ausgaben
-in öffentliche Issues kopieren. Der Monitor benötigt kein Kennwort; er verwendet
-einen separaten TCP-Zugang auf Port 1012. Abbruch mit Strg+C.
-
-Interne Nummern und Wähl-Steuercodes werden in dieser Diagnose nicht ausgewertet.
-Eine erkannte Zielnummer ist noch keine auf Rückrufbarkeit geprüfte Freigabe.
-
-## 3. Schreibrechte gezielt prüfen
-
-Voraussetzung: Zusätzliche lokale Telefonbuch-ID und Name wurden mit `check`
-ermittelt. Der Probelauf mit `monitor` war erfolgreich. Vor dem ersten Schreibtest
-das Ziel-Telefonbuch über die FRITZ!Box-Oberfläche sichern.
-
-Das folgende Beispiel gilt für ein lokales Buch namens **Rufpass mit ID 1**:
-
-```bash
-.venv/bin/rufpass probe --phonebook-id 1 --phonebook Rufpass
-```
-
-Das Kennwort wird erneut verdeckt abgefragt. Der Befehl:
-
-1. Prüft ID und Namen des Telefonbuchs; das Standardbuch mit ID 0 ist gesperrt.
-2. Legt einen neuen Kontakt `Rufpass Schreibtest JJJJ-MM-TT <Zufallskennung>` an.
-3. Verwendet ausschließlich die interne Rundrufnummer `**9`, ohne sie zu wählen.
-4. Liest den Kontakt über die von der Box gelieferte UID zurück und prüft seine Identität.
-5. Löscht ausschließlich diesen verifizierten Testkontakt und prüft, ob er entfernt ist.
-
-Erwartung: `OK: Testkontakt angelegt, zurückgelesen und wieder entfernt.`
-
-Bestehende Kontakte werden nicht bearbeitet. Bei Abbruch oder unklarer Antwort
-wird das Anlegen nicht automatisch wiederholt. Ein Testkontakt kann dann zurückbleiben;
-sein eindeutiger Name steht in der Ausgabe. Falls vorhanden, ausschließlich diesen
-Kontakt im Zielbuch manuell entfernen. Es gibt keine pauschale Lösch- oder Wiederherstellungsfunktion.
-
-## 4. Testkontakt sichtbar gespeichert lassen
-
-Der ursprüngliche Schreibtest wurde auf einer FRITZ!Box 7690 mit FRITZ!OS 8.25
-einschließlich Rücklesen und Entfernen erfolgreich ausgeführt. Für eine Sichtprüfung
-gibt es einen zusätzlichen Modus:
-
-```bash
-.venv/bin/rufpass probe --phonebook-id 1 --phonebook Rufpass --keep
-```
-
-Der Befehl fragt zuerst eine **eigene externe Testnummer mit Vorwahl** ab,
-beispielsweise die eigene Mobilfunknummer. Diese Nummer lokal eingeben; sie wird
-nicht als Kommandozeilenargument benötigt und landet dadurch nicht in der Shell-Historie.
-Danach wird das FRITZ!Box-Kennwort verdeckt abgefragt.
-
-Es entsteht ein normaler Kontakt `Rufpass Schreibtest JJJJ-MM-TT <Zufallskennung>` mit der
-eingegebenen Nummer. Nach dem Rücklesen bleibt er absichtlich gespeichert.
-Die normale Telefonbuchansicht im Browser anschließend neu laden.
-
-Erwartung: `OK: Testkontakt bleibt gespeichert.`
-
-Es wird kein Anruf ausgelöst. Die Nummer ist durch den Telefonbucheintrag
-für die bestehende Positivliste bekannt. Der Eintrag hat noch kein automatisches
-Ablaufdatum und muss nach dem Test manuell gelöscht werden. Jeder erneute
-Aufruf legt einen weiteren markierten Testkontakt an.
-
-Dieser Modus verwendet eine externe Nummer, weil interne Nummern wie `**9`
-in der Oberfläche gesondert behandelt werden und sich für die normale Kontaktansicht
-nicht als Sichttest eignen. `monitor` bleibt weiterhin rein lesend.
-
-## Welcher Befehl legt einen Kontakt an?
-
-| Befehl | Verhalten |
+| Befehl | Wirkung |
 | --- | --- |
-| `check` | Liest und zählt Kontakte; keine Änderungen. |
-| `monitor` | Zeigt Wählversuche an; legt keine Freigaben an. |
-| `probe` | Legt einen temporären Testkontakt an und entfernt ihn wieder. |
-| `probe --keep` | Lässt einen Testkontakt mit der lokal eingegebenen externen Nummer gespeichert. |
-| `run` | Verarbeitet Wählversuche und verwaltet eigene Freigaben; verwendet die Dienstkonfiguration. |
-| `validate` | Prüft die Dienstkonfiguration, Telefonbücher und Callmonitor lesend. |
-| `status` | Zeigt Zähler aus der lokalen Datenbank ohne Router-Zugriff. |
-| `configure` | Schreibt einmalig eine lokale Konfigurationsdatei; keine Router-Änderungen. |
+| `configure` | Legt einmalig die lokale Konfiguration an; keine Router-Änderung |
+| `validate` | Prüft Dienstkonfiguration, Telefonbücher und Callmonitor lesend |
+| `status` | Zeigt lokale Freigabezähler ohne Router-Zugriff |
+| `run` | Verarbeitet Wählversuche und verwaltet eigene Freigaben |
+| `check` | Zeigt Telefonbuch-IDs und Kontaktzahlen, ohne zu schreiben |
+| `monitor` | Zeigt Live-Wählereignisse, ohne sie zu speichern |
 
-Nach `probe` ohne `--keep` ist das Zielbuch wieder leer, wenn es vorher leer war. Automatische Rückruf-Freigaben führt der neue Befehl `run` aus; siehe [Betrieb](operations.md).
-Die installierte Paketversion lässt sich mit `.venv/bin/rufpass --version` prüfen.
+## Fehler eingrenzen
 
-## Fehler und nächste Schritte
+- Telefonbuchzugriff scheitert: Host, Benutzer, dessen Kennwort und Telefonie-Rechte prüfen.
+  Der Zugriff für Anwendungen ist normalerweise bereits aktiv; nur bei einer
+  deaktivierten Einstellung ist eine Änderung in der Box nötig.
+- Zielbuch fehlt: Exakten Namen und ID des zusätzlichen lokalen Buchs prüfen.
+- Callmonitor nicht erreichbar: Aktivierung mit `#96*5*` und Netzwerkzugriff auf TCP 1012 prüfen.
+- Dienst aktiv, aber keine Freigabe: Wiederkehrende Abgleichfehler im Journal prüfen.
+  Bekannte, interne und ausgewählte Sondernummern werden nicht zusätzlich angelegt.
 
-- `check` scheitert: Host, TR-064-Freigabe, Benutzer, Rechte und Kennwort prüfen.
-- Zielbuch fehlt: Telefonbuchnamen in der Ausgabe mit `--phonebook` abgleichen.
-- `monitor` scheitert: Callmonitor-Aktivierung und Erreichbarkeit von TCP 1012 prüfen.
-- Verbindung bricht ab: Die Bibliothek versucht kurz erneut zu verbinden; danach
-  beendet Rufpass die Diagnose mit Fehlerstatus. Verpasste Wählereignisse sind verloren.
-
-Für den normalen Dienstbetrieb die [Betriebsanleitung](operations.md) verwenden. Bei Fehlern
-angeben, ob ein Testkontakt zurückblieb und manuell entfernt wurde.
-Kennwort und vollständige Telefonnummern bleiben lokal.
-
-## Automatisierte Tests
-
-```bash
-.venv/bin/python -m unittest discover -s tests -v
-```
-
-Die Tests verwenden synthetische Daten und simulierte Schnittstellen. Sie ersetzen
-keinen Gerätetest. Die Bibliotheks-API ist in der
-[fritzconnection-Dokumentation](https://fritzconnection.readthedocs.io/en/latest/) beschrieben.
+Vor dem Melden eines Fehlers die Version mit `rufpass --version` feststellen und
+Modell, FRITZ!OS-Version, Betriebssystem sowie Schritte mit synthetischen Daten angeben.
+Keine Kennwörter, Telefonbuch-Exporte oder Datenbanken veröffentlichen.

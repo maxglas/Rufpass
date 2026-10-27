@@ -18,6 +18,7 @@ class NameLookup:
         self.next_request = 0
 
     def find(self, number):
+        """Return one exact Wikidata name, or None on ambiguity, backoff or failure."""
         if re.fullmatch(r"\+[1-9][0-9]{6,14}", number) is None:
             return None
         now = time.monotonic()
@@ -32,7 +33,7 @@ class NameLookup:
             SERVICE wikibase:label { bd:serviceParam wikibase:language "de,en". }
         } GROUP BY ?item ?itemLabel LIMIT 2''' % (digits, digits)
         request = Request("https://query.wikidata.org/sparql?" + urlencode({"query": query}), headers={
-            "User-Agent": "Rufpass/0.2.4 (https://github.com/maxglas/Rufpass)",
+            "User-Agent": "Rufpass/0.2.5 (https://github.com/maxglas/Rufpass)",
             "Accept": "application/sparql-results+json",
         })
         try:
@@ -61,11 +62,11 @@ class NameLookup:
             return next(iter(owners.values())) if len(owners) == 1 else None
         except HTTPError as exc:
             if exc.code == 429:
-                retry_after = exc.headers.get("Retry-After", "60")
-                seconds = int(retry_after) if retry_after.isascii() and retry_after.isdecimal() else 60
+                retry_after = (exc.headers or {}).get("Retry-After", "60")
+                seconds = int(retry_after) if len(retry_after) <= 6 and retry_after.isascii() and retry_after.isdecimal() else 60
                 self.next_request = time.monotonic() + min(max(seconds, 60), 3600)
-            LOG.warning("Namenssuche nicht verfügbar (HTTP %s); Name unbekannt wird verwendet.", exc.code)
+            LOG.warning("Namenssuche nicht verfügbar (HTTP %s); Rufnummer wird als Anzeigename verwendet.", exc.code)
         except Exception as exc:
             # Exception text can contain the query URL and the dialled number.
-            LOG.warning("Namenssuche fehlgeschlagen (%s); Name unbekannt wird verwendet.", type(exc).__name__)
+            LOG.warning("Namenssuche fehlgeschlagen (%s); Rufnummer wird als Anzeigename verwendet.", type(exc).__name__)
         return None

@@ -33,7 +33,7 @@ Abgabe der Verwaltung. Es gibt weder einen Komplettimport noch ein Ersetzen von 
 
 Vor der ersten Anlage kann eine kurze exakte Namenssuche bei Wikidata erfolgen,
 nach dem Abgleich aller lokalen Telefonbücher. Das Ergebnis einschließlich
-`Name unbekannt` wird vor dem Router-Schreibzugriff gespeichert. Fehler der
+der Rufnummer als Anzeigename bei fehlendem Treffer wird vor dem Router-Schreibzugriff gespeichert. Fehler der
 optionalen Suche verhindern keine Freigabe.
 
 ## Fehler und Wiederanlauf

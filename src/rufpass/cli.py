@@ -1,4 +1,4 @@
-"""Command-line entry points for the service, diagnostics and controlled write probes."""
+"""Command-line entry points for normal operation and read-only diagnostics."""
 
 import argparse
 import getpass
@@ -8,8 +8,6 @@ import queue
 import re
 import sys
 import warnings
-import uuid
-from datetime import date
 from importlib.metadata import version
 from xml.etree import ElementTree as ET
 
@@ -17,7 +15,6 @@ from rufpass.config import DEFAULT_CONFIG
 
 from fritzconnection import FritzConnection, FritzMonitor
 from fritzconnection.lib.fritzphonebook import FritzPhonebook
-from fritzconnection.core.exceptions import FritzArrayIndexError
 
 
 class DiagnosticError(Exception):
@@ -92,12 +89,13 @@ def check_phonebook(connection, name: str) -> tuple[int, int, int]:
 
 
 def connect(args):
+    """Authenticate the named router user with protected input or a local environment value."""
     password = os.environ.get("RUFPASS_PASSWORD")
     if not password:
         # Do not let getpass fall back to an echoed password on a non-interactive terminal.
         with warnings.catch_warnings():
             warnings.simplefilter("error", getpass.GetPassWarning)
-            password = getpass.getpass("FRITZ!Box-Kennwort für den Benutzer rufpass (bzw. --user): ")
+            password = getpass.getpass(f"FRITZ!Box-Kennwort für den Benutzer '{args.user}': ")
     if not password:
         raise DiagnosticError("Kein Kennwort angegeben.")
     return FritzConnection(
@@ -110,6 +108,7 @@ def connect(args):
 
 
 def run_check(args) -> int:
+    """Report book IDs and counts without writing or displaying contact data."""
     book_id, count, internal = check_phonebook(connect(args), args.phonebook)
     print(f"OK: Ziel-Telefonbuch lesbar, ID {book_id}, {count} Kontakte.")
     print(f"Zusätzlich {internal} interne Einträge im XML (keine externen Kontakte).")
@@ -117,88 +116,8 @@ def run_check(args) -> int:
     return 0
 
 
-def probe_phonebook(connection, book_id: int, expected_name: str, *, keep: bool = False,
-                    number: str | None = None) -> None:
-    """Create and verify our test contact; remove it unless explicitly retained."""
-    if book_id <= 0:
-        raise DiagnosticError("Der Schreibtest ist im Standard-Telefonbuch (ID 0) nicht erlaubt.")
-    if keep:
-        number = re.sub(r"[ ()/\-]", "", number or "")
-        if re.fullmatch(r"(?:\+[1-9][0-9]{6,14}|0[0-9]{6,14})", number) is None:
-            raise DiagnosticError("Für den sichtbaren Test eine eigene externe Nummer mit Orts-/Mobilfunk- "
-                                  "oder Landesvorwahl eingeben; keine internen Nummern oder Steuercodes.")
-    else:
-        number = "**9"
-    service = "X_AVM-DE_OnTel1"
-    info = connection.call_action(service, "GetPhonebook", NewPhonebookID=book_id)
-    if info.get("NewPhonebookName") != expected_name:
-        raise DiagnosticError("Telefonbuch-ID und Name passen nicht zusammen; keine Änderung vorgenommen.")
-    name = f"Rufpass Schreibtest {date.today().isoformat()} {uuid.uuid4().hex}"
-    contact = ET.Element("contact")
-    ET.SubElement(contact, "category").text = "0"
-    ET.SubElement(ET.SubElement(contact, "person"), "realName").text = name
-    ET.SubElement(ET.SubElement(contact, "telephony"), "number",
-                  type="work" if keep else "intern", prio="0").text = number
-    print(f"Testkontakt: {name!r}, Telefonbuch-ID {book_id}.", flush=True)
-    if keep:
-        print("Der sichtbare Testkontakt bleibt gespeichert, bis du ihn im Telefonbuch löschst. "
-              "Es wird kein Anruf ausgelöst.", flush=True)
-    else:
-        print("Verwendet nur die interne Rundrufnummer **9; es wird kein Anruf ausgelöst.", flush=True)
-    uid = None
-    try:
-        result = connection.call_action(
-            service, "SetPhonebookEntryUID", NewPhonebookID=book_id,
-            NewPhonebookEntryData=ET.tostring(contact, encoding="unicode"),
-        )
-        raw_uid = result.get("NewPhonebookEntryUniqueID")
-        if isinstance(raw_uid, bool) or not re.fullmatch(r"[0-9]+", str(raw_uid)):
-            raise DiagnosticError("Die Box hat keine gültige Eintrags-UID geliefert; keine automatische Löschung.")
-        uid = int(raw_uid)
-        entry = connection.call_action(
-            service, "GetPhonebookEntryUID", NewPhonebookID=book_id,
-            NewPhonebookEntryUniqueID=uid,
-        )
-        saved = ET.fromstring(entry["NewPhonebookEntryData"])
-        if (saved.tag != "contact" or saved.findtext("person/realName") != name
-                or saved.findtext("uniqueid") != str(uid)
-                or [node.text for node in saved.findall("telephony/number")] != [number]):
-            raise DiagnosticError("Rückgelesener Kontakt ist nicht eindeutig unser Testkontakt; keine Löschung.")
-        print(f"Anlegen und Rücklesen erfolgreich (Eintrags-UID {uid}).", flush=True)
-        if keep:
-            print("OK: Testkontakt bleibt gespeichert. Telefonbuchansicht in der FRITZ!Box neu laden.",
-                  flush=True)
-            return
-        connection.call_action(
-            service, "DeletePhonebookEntryUID", NewPhonebookID=book_id,
-            NewPhonebookEntryUniqueID=uid,
-        )
-        try:
-            connection.call_action(
-                service, "GetPhonebookEntryUID", NewPhonebookID=book_id,
-                NewPhonebookEntryUniqueID=uid,
-            )
-        except FritzArrayIndexError:
-            print("OK: Testkontakt angelegt, zurückgelesen und wieder entfernt.", flush=True)
-        else:
-            raise DiagnosticError("Die Entfernung des Testkontakts konnte nicht bestätigt werden.")
-    except (Exception, KeyboardInterrupt):
-        # Never retry creation after an uncertain response or delete an unverified UID.
-        print(f"Test nicht vollständig abgeschlossen. In Telefonbuch-ID {book_id} nach {name!r} suchen "
-              "und, falls vorhanden, ausschließlich diesen Testkontakt manuell entfernen.",
-              file=sys.stderr, flush=True)
-        raise
-
-
-def run_probe(args) -> int:
-    number = None
-    if args.keep:
-        number = input("Eigene externe Testnummer mit Vorwahl (wird im Telefonbuch gespeichert): ")
-    probe_phonebook(connect(args), args.phonebook_id, args.phonebook, keep=args.keep, number=number)
-    return 0
-
-
 def run_monitor(args) -> int:
+    """Observe live dial events for troubleshooting; never create grants."""
     print("Verbinde mit dem Callmonitor auf TCP-Port 1012 …", flush=True)
     with FritzMonitor(address=args.host, timeout=10) as monitor:
         events = monitor.start(reconnect_delay=5, reconnect_tries=3)
@@ -230,18 +149,12 @@ def main(argv=None) -> int:
         command.add_argument("--config", default=DEFAULT_CONFIG)
     check = commands.add_parser("check", help="Telefonbuchzugriff und Ziel-ID prüfen")
     monitor = commands.add_parser("monitor", help="Ausgehende Wählversuche live erkennen")
-    probe = commands.add_parser("probe", help="Testkontakt anlegen und prüfen; standardmäßig wieder entfernen")
-    for command in (check, monitor, probe):
+    for command in (check, monitor):
         command.add_argument("--host", default=os.environ.get("RUFPASS_HOST", "fritz.box"),
                              help="FRITZ!Box-Hostname oder IP (Standard: fritz.box)")
-    for command in (check, probe):
-        command.add_argument("--user", default=os.environ.get("RUFPASS_USER", "rufpass"))
-        command.add_argument("--phonebook", default=os.environ.get("RUFPASS_PHONEBOOK", "Rufpass"),
-                             help="Exakter Name des zusätzlichen Telefonbuchs (Standard: Rufpass)")
-    probe.add_argument("--phonebook-id", type=int, required=True,
-                       help="ID des zusätzlichen lokalen Telefonbuchs; ID 0 ist gesperrt")
-    probe.add_argument("--keep", action="store_true",
-                       help="Sichtbaren Testkontakt mit lokal abgefragter externer Nummer gespeichert lassen")
+    check.add_argument("--user", default=os.environ.get("RUFPASS_USER", "rufpass"))
+    check.add_argument("--phonebook", default=os.environ.get("RUFPASS_PHONEBOOK", "Rufpass"),
+                       help="Exakter Name des zusätzlichen Telefonbuchs (Standard: Rufpass)")
     monitor.add_argument("--show-numbers", action="store_true",
                          help="Zielnummern für den lokalen Test unmaskiert anzeigen")
     args = parser.parse_args(argv)
@@ -253,7 +166,7 @@ def main(argv=None) -> int:
             from rufpass.service import run, validate, status
             {"run": run, "configure": configure, "validate": validate, "status": status}[args.command](args.config)
             return 0
-        return {"check": run_check, "monitor": run_monitor, "probe": run_probe}[args.command](args)
+        return {"check": run_check, "monitor": run_monitor}[args.command](args)
     except KeyboardInterrupt:
         print("\nDiagnose beendet.")
         return 130
@@ -262,7 +175,7 @@ def main(argv=None) -> int:
         return 1
     except Exception as exc:
         print(f"Diagnose fehlgeschlagen ({type(exc).__name__}).", file=sys.stderr)
-        print("Host, Erreichbarkeit und Aktivierung der Schnittstelle prüfen. Bei check/probe auch Benutzer, "
+        print("Host, Erreichbarkeit und Aktivierung der Schnittstelle prüfen. Bei check auch Benutzer, "
               "Telefonie-Rechte und Kennwort prüfen. Bei monitor den Callmonitor mit #96*5* aktivieren. "
               "Kennwörter und vollständige Rufnummern nicht in Fehlerberichte kopieren.", file=sys.stderr)
         if args.command in ("run", "configure", "validate", "status"):

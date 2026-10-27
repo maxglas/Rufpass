@@ -53,9 +53,14 @@ Smart Home sind dafür nicht erforderlich. Bei der Installation wird das Kennwor
 Die Telefonie-Rechte lassen sich an der Box nicht auf das zusätzliche Buch begrenzen;
 Rufpass beschränkt seine Änderungen selbst auf dieses Buch.
 
-**Zugriff für Anwendungen erlauben.** In den Netzwerkeinstellungen der Box den Zugriff
-für Anwendungen/Apps (TR-064) zulassen. Über diese angemeldete Schnittstelle liest
-Rufpass vorhandene Telefonnummern und verwaltet die eigenen Freigabeeinträge.
+**Anwendungszugriff prüfen (normalerweise bereits aktiv).** TR-064 ist die
+Programmierschnittstelle der FRITZ!Box. Rufpass meldet sich dort mit dem eingerichteten
+Benutzer an, liest Telefonbücher und verwaltet die eigenen Freigabeeinträge. In den
+Werkseinstellungen ist der Zugriff für Anwendungen üblicherweise schon erlaubt.
+Wenn der Telefonbuchzugriff funktioniert, ist keine zusätzliche Freigabe nötig.
+Nur falls die Option deaktiviert wurde, in den Netzwerkeinstellungen **Zugriff für
+Anwendungen/Apps erlauben** einschalten. Das ist eine lokale Schnittstellenfreigabe,
+keine Portweiterleitung ins Internet. [FRITZ!-Anleitung](https://fritz.com/apps/knowledge-base/myfritz-app/3266_myfritz-app-fur-android-einrichten)
 
 **Callmonitor freigeben.** Der Callmonitor ist eine eingebaute FRITZ!Box-Schnittstelle,
 die laufende Telefonie-Ereignisse wie Klingeln, Wählbeginn und Auflegen mit Rufnummern
@@ -135,7 +140,8 @@ sudo journalctl -u rufpass -n 30 --no-pager
 Erwartung: `active (running)`, `enabled` und ein verbundener Callmonitor ohne
 wiederkehrende Telefonbuchfehler. Danach eine eigene, noch nicht gespeicherte
 Testnummer vom Festnetz wählen, den neuen Kontakt kontrollieren und zurückrufen lassen.
-Ein früherer `probe --keep`-Testkontakt muss dafür zuerst manuell entfernt werden.
+Ein alter, manuell stehen gelassener Entwicklungstestkontakt dieser Nummer muss
+für diese Prüfung zuerst in der Box entfernt werden.
 
 Details zu [Ersteinrichtung, Konfiguration, Updates und Betrieb](docs/operations.md).
 
@@ -143,7 +149,8 @@ Details zu [Ersteinrichtung, Konfiguration, Updates und Betrieb](docs/operations
 
 1. **Du rufst jemanden an.** Rufpass erkennt den Wählbeginn, auch wenn niemand abnimmt.
 2. **Eine Freigabe wird angelegt.** Neue Nummern erscheinen als normale Kontakte im
-   zusätzlichen Telefonbuch, mit Datum im Namen: `Rufpass 2026-10-26 Name unbekannt`.
+   zusätzlichen Telefonbuch. Ein unbekannter Name wird durch die **Rufnummer allein**
+   ersetzt, damit der Rückruf im Display zugeordnet werden kann.
    Vorher werden alle lesbaren FRITZ!Box-Telefonbücher abgeglichen. Bereits bekannte
    Nummern werden nicht zusätzlich angelegt, auch bei unterschiedlicher Schreibweise.
 3. **Der Rückruf darf klingeln.** Die FRITZ!Box übernimmt weiterhin die Rufbehandlung.
@@ -166,14 +173,18 @@ zum gespeicherten Rufpass-Eintrag passen. Manuell veränderte Kontakte bleiben e
 
 Mit `reverse_lookup = true` kann Rufpass für neue unbekannte Nummern eine kostenlose
 Rückwärtssuche bei [Wikidata](https://www.wikidata.org/) versuchen. Ein eindeutiger
-Treffer ergibt beispielsweise `Rufpass 2026-10-26 Beispielmuseum`, sonst bleibt es
-bei `Name unbekannt`. Dazu werden die Rufnummer und die öffentliche IP an den Dienst
+Treffer ergibt beispielsweise `Beispielmuseum`. Ohne eindeutigen Namen steht nur
+die normalisierte Rufnummer im Namensfeld, etwa `+49…`. Der Anzeigename enthält
+keinen Rufpass-/Datumspräfix, damit Name oder Rufnummer im Telefon-Display Platz haben.
+Leere Namen sind am Gerät nicht bestätigt, daher wird die Rufnummer als Rückfall
+verwendet. Das Anlegedatum bleibt intern gespeichert. Bestehende Kontakte
+werden nicht nachträglich umbenannt. Dazu werden die Rufnummer und die öffentliche IP an den Dienst
 übertragen. Die Suche ist standardmäßig eingeschaltet; mit `reverse_lookup = false`
 lässt sie sich abschalten. Wikidata ist kein vollständiges Telefonverzeichnis: Viele Betriebe und private Nummern liefern keinen Treffer.
 
 ## Stand und Kompatibilität
 
-**Version 0.2.4:** Automatische Freigaben, Ablaufverwaltung, Wiederanlauf und
+**Version 0.2.5:** Automatische Freigaben, Ablaufverwaltung, Wiederanlauf und
 Ubuntu-Installer sind implementiert und mit simulierten Schnittstellen getestet.
 Die vollständige systemd-Installation und der Dauerbetrieb am Gerät sind noch zu
 bestätigen; diese Version ist ein früher Teststand. Ein erfolgreicher Live-Namenstreffer
@@ -206,7 +217,7 @@ unter Windows gibt es einen [kurzen Einstieg](docs/windows.md).
 - Während Rufpass aus ist, verpasste Wählversuche können nicht nachgeholt werden.
   Bereits gespeicherte Freigaben bleiben bei einem Ausfall bestehen; ihre Bereinigung wartet
   auf den nächsten erfolgreichen Dienstlauf.
-- Manuelle Kontakte und frühere `probe --keep`-Testkontakte werden nicht nachträglich
+- Manuelle Kontakte und frühere Entwicklungstestkontakte werden nicht nachträglich
   als automatisch verwaltete Freigaben übernommen.
 
 ## Diagnose und Dokumentation
@@ -217,7 +228,7 @@ Befehl `run` aus; der Installer richtet diesen als Dienst ein.
 - [Voraussetzungen an FRITZ!Box und Rechner](docs/prerequisites.md)
 - [Manuelle Python-Ausführung unter Windows](docs/windows.md)
 - [Installation, Betrieb, Konfiguration und Fehlerbehebung](docs/operations.md)
-- [Diagnosebefehle und kontrollierte Schreibtests](docs/diagnostics.md)
+- [Lesende Betriebsdiagnose](docs/diagnostics.md)
 - [Architektur](docs/architecture.md)
 - [Architekturentscheidung: Python](docs/adr-001-python.md)
 - [Recherche und Quellen](docs/research.md)
@@ -232,7 +243,8 @@ Rufpass ist ein unabhängiges Projekt und kein offizielles Produkt von FRITZ!.
 
 ## Lizenz
 
-Das Lizenzziel erlaubt Nutzung und Anpassungen auch im eigenen Betrieb, soll aber
-die kommerzielle Verwertung von Rufpass selbst ausschließen. Die endgültige
-Lizenzfassung ist noch offen; [Anforderungen und Kandidat](docs/licensing.md).
-Eine `LICENSE` wird vor der öffentlichen Freigabe ergänzt.
+Rufpass ist **Source Available** unter **Apache-2.0 mit Commons Clause v1.0**.
+Nutzung und Anpassung im eigenen Betrieb sind erlaubt. Entgeltliche Angebote,
+deren Wert ganz oder wesentlich aus Rufpass stammt, sind durch die Commons Clause
+eingeschränkt. Maßgeblich ist [LICENSE](LICENSE); eine verständliche Zusammenfassung
+steht unter [Lizenz und Nutzung](docs/licensing.md).

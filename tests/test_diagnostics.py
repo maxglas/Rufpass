@@ -94,6 +94,12 @@ class PhonebookTests(unittest.TestCase):
 
 
 class CommandTests(unittest.TestCase):
+    def test_development_write_probe_is_not_an_available_command(self):
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
+            main(["probe"])
+        self.assertEqual(error.exception.code, 2)
+
+
     @patch("rufpass.cli.FritzConnection")
     @patch("rufpass.cli.getpass.getpass", return_value="synthetic-password")
     def test_router_error_does_not_reveal_password_or_url(self, password_prompt, connection):

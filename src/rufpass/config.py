@@ -52,6 +52,7 @@ class Config:
 
 
 def load_config(path: str) -> Config:
+    """Load local TOML and validate it before credentials reach the router client."""
     with open(path, "rb") as file:
         values = tomllib.load(file)
     return Config(**values)

@@ -26,7 +26,10 @@ nach der [Installationsanleitung](operations.md#rufpass-installieren) installier
    Einstellungs-, NAS- oder Smart-Home-Rechte werden nicht benötigt.
    FRITZ!Box-Rechte können nicht auf ein einzelnes Telefonbuch beschränkt werden.
    Der gleichnamige spätere Linux-Dienstbenutzer ist ein anderes Konto.
-4. Den Zugriff für Anwendungen (TR-064) zulassen. Je nach FRITZ!OS heißt die Option
+4. Den Anwendungszugriff (TR-064) prüfen; er ist in den Werkseinstellungen normalerweise
+   bereits aktiv. Funktionierender Telefonbuchzugriff bestätigt die Verfügbarkeit;
+   dann muss nichts zusätzlich eingeschaltet werden. Nur falls deaktiviert, wieder
+   erlauben. Je nach FRITZ!OS heißt die Option
    **Zugriff für Anwendungen zulassen** oder **Zugriff für Apps erlauben**. Sie ist
    unter **Heimnetz → Netzwerk → Netzwerkeinstellungen**, gegebenenfalls in den
    erweiterten Einstellungen/Heimnetzfreigaben, zu finden.
@@ -47,8 +50,7 @@ nach der [Installationsanleitung](operations.md#rufpass-installieren) installier
 Die grundlegenden Schnittstellen sind an einer FRITZ!Box 7690 mit FRITZ!OS 8.25
 geprüft. Andere Modelle sind noch nicht bestätigt. Name und ID lassen sich bei
 Bedarf mit dem lesenden [Diagnosebefehl `check`](diagnostics.md#1-telefonbuchzugriff-prüfen)
-ermitteln. Die einzelnen Diagnose- und Schreibtests sind für die normale Installation
-keine Pflichtschritte.
+ermitteln. Die lesenden Diagnosebefehle sind optionale Hilfen bei Betriebsproblemen.
 
 ## Ubuntu vorbereiten
 

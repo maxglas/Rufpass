@@ -105,8 +105,7 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(self.router.created, 1)
         self.assertEqual(self.store.rows()[0]["uid"], 101)
         name = self.router.contacts[101].findtext("person/realName")
-        expected_date = datetime.fromtimestamp(self.now).date().isoformat()
-        self.assertRegex(name, rf"^Rufpass {expected_date} Name unbekannt$")
+        self.assertEqual(name, self.number)
 
     def test_repeated_call_extends_expiry_without_duplicate_or_router_write(self):
         self.create_grant()
@@ -119,13 +118,15 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(self.router.created, 1)
 
     def test_names_are_persisted_and_equal_names_for_other_numbers_are_safe(self):
-        self.create_grant()
-        self.engine.dial("+493000000002", self.now)
-        self.engine.sync(self.router, self.now)
+        self.engine.config = replace(self.config, reverse_lookup=True)
+        with patch.object(self.engine.lookup, "find", return_value="Beispielpraxis"):
+            self.create_grant()
+            self.engine.dial("+493000000002", self.now)
+            self.engine.sync(self.router, self.now)
         self.assertEqual(self.router.created, 2)
         names = [root.findtext("person/realName") for root in self.router.contacts.values()]
         self.assertEqual(names[0], names[1])
-        self.assertTrue(names[0].endswith(" Name unbekannt"))
+        self.assertEqual(names[0], "Beispielpraxis")
         self.engine.sync(self.router, self.now + 31 * 86400)
         self.assertEqual(self.router.deleted, [101, 102])
 
@@ -145,7 +146,7 @@ class EngineTests(unittest.TestCase):
             self.engine.dial(self.number, self.now)
             with self.assertRaises(TimeoutError):
                 self.engine.sync(self.router, self.now)
-            self.assertTrue(self.store.rows()[0]["contact_name"].endswith(" Beispielmuseum"))
+            self.assertEqual(self.store.rows()[0]["contact_name"], "Beispielmuseum")
             self.router.fail_create_reply = False
             self.engine.sync(self.router, self.now + 1)
             self.engine.dial(self.number, self.now + 2)
@@ -185,6 +186,22 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(self.router.created, 0)
         self.assertEqual(self.router.deleted, [])
 
+    def test_empty_router_setup_element_does_not_abandon_owned_contact(self):
+        self.create_grant()
+        ET.SubElement(self.router.contacts[101], "setup")
+        self.engine.sync(self.router, self.now + 1)
+        self.assertEqual(len(self.store.rows()), 1)
+        self.engine.sync(self.router, self.now + 30 * 86400)
+        self.assertEqual(self.router.deleted, [101])
+
+    def test_personal_setup_additions_are_preserved(self):
+        self.create_grant()
+        setup = ET.SubElement(self.router.contacts[101], "setup")
+        ET.SubElement(setup, "ringtone").text = "custom"
+        self.engine.sync(self.router, self.now + 30 * 86400)
+        self.assertEqual(self.router.deleted, [])
+        self.assertIn(101, self.router.contacts)
+
     def test_expiry_removes_only_owned_contact(self):
         self.router.contacts[7] = contact("Manuell", "+493000000002", 7)
         self.create_grant()
@@ -213,8 +230,7 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(self.router.created, 1)
         self.assertEqual(self.store.rows()[0]["uid"], 101)
         name = self.router.contacts[101].findtext("person/realName")
-        expected_date = datetime.fromtimestamp(self.now).date().isoformat()
-        self.assertRegex(name, rf"^Rufpass {expected_date} Name unbekannt$")
+        self.assertEqual(name, self.number)
 
     def test_delete_timeout_is_reconciled_without_deleting_other_contacts(self):
         self.create_grant()

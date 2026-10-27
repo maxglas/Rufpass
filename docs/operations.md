@@ -110,15 +110,19 @@ allein bestätigt noch keine funktionierende Router-Verbindung.
    Testnummer noch einmal wählen. Der bestehende Kontakt muss weiterverwendet werden.
    Optional später einen Ubuntu-Neustart nutzen, um den tatsächlichen Autostart zu prüfen.
 
-Es gibt keine verpflichtende Folge von `check`, `monitor` und `probe`: Diese Befehle
-sind für die gezielte Fehlersuche gedacht. Die Ablaufbereinigung wird bisher durch
+`check` und `monitor` sind optionale lesende Hilfen zur Fehlersuche. Einen Befehl
+zum Anlegen von Beispielkontakten gibt es nicht. Die Ablaufbereinigung wird bisher durch
 Simulationen geprüft; eine echte 365-Tage-Laufzeit ist nicht bestätigt.
 
 Nach einem eigenen Wählversuch zu einer noch unbekannten normalen Nummer erscheint
-ein Kontakt `Rufpass JJJJ-MM-TT Name unbekannt` im zusätzlichen Telefonbuch. Weder
+ein Kontakt im zusätzlichen Telefonbuch. Ohne aufgelösten Namen ist sein Anzeigename
+die normalisierte Rufnummer allein, damit sie auf dem Telefon sichtbar bleibt. Weder
 Gesprächsannahme noch eine bestimmte Gesprächsdauer sind erforderlich. Das Datum
-bezeichnet den ersten erfassten Wählversuch dieser Freigabe in der lokalen Zeitzone
-des Servers. Bei erneutem Wählen bleibt dieses Datum erhalten; die Gültigkeit wird
+bezeichnet intern den ersten erfassten Wählversuch dieser Freigabe in der lokalen
+Zeitzone des Servers. Im Telefonbuch steht nur der aufgelöste Name oder die Rufnummer,
+ohne Rufpass-/Datumspräfix. Das Datum bleibt im lokalen Zustand gespeichert, ist aber
+nicht mehr unabhängig von Rufpass im Kontaktnamen sichtbar. Leere Namen sind nicht
+am Gerät bestätigt; daher verwendet Rufpass die Rufnummer als Rückfall. Bei erneutem Wählen bleibt dieses Datum erhalten; die Gültigkeit wird
 ab dem neuen Wählversuch verlängert. Bestehende Einträge behalten ihren Namen.
 Vor jeder neuen Anlage liest Rufpass alle von der FRITZ!Box bereitgestellten Telefonbücher
 und vergleicht normalisierte Nummern. Ist ein Buch nicht lesbar, wird keine neue
@@ -137,10 +141,10 @@ Direkt als Personen klassifizierte Einträge werden ausgeschlossen. Die Abdeckun
 ist auf die in Wikidata erfassten Nummern begrenzt, vor allem Organisationen und
 öffentliche Einrichtungen; kleine Betriebe und Privatnummern fehlen häufig.
 Mehrdeutige Ergebnisse, fehlende Namen, ungültige Antworten oder Fehler ergeben
-`Name unbekannt`. Eine Anfrage hat drei Sekunden Netzwerk-Timeout. Das ist keine
+die Rufnummer als Anzeigename. Eine Anfrage hat drei Sekunden Netzwerk-Timeout. Das ist keine
 harte Obergrenze für DNS-Auflösung oder einen langsam tröpfelnden Antwortstrom.
 Es gibt höchstens eine Anfrage pro Sekunde; bei HTTP 429 wird mindestens eine Minute
-pausiert. Während einer Pause erhalten neue Kontakte sofort `Name unbekannt`.
+pausiert. Während einer Pause erhalten neue Kontakte sofort die Rufnummer als Anzeigename.
 Das Suchergebnis wird vor dem Router-Schreibzugriff gespeichert und beim Wiederanlauf
 weiterverwendet. Bestehende Kontakte werden nicht nachträglich nachgeschlagen oder umbenannt.
 
@@ -153,7 +157,7 @@ reverse_lookup = false
 Ohne diese Einstellung ist die Suche standardmäßig eingeschaltet, auch bei älteren Konfigurationen.
 Mit `reverse_lookup = true` kann sie wieder aktiviert werden.
 
-Wichtig: Bereits vorhandene Kontakte, auch `Rufpass Schreibtest …` aus `probe --keep`,
+Wichtig: Bereits vorhandene Kontakte, auch stehen gelassene Entwicklungstestkontakte,
 werden nicht zusätzlich angelegt oder mit einem Ablaufdatum versehen. Für einen
 End-to-End-Test einen solchen Testkontakt zuerst manuell löschen und die kontrollierte
 Testnummer erneut vom Festnetz aus wählen. Danach vom Testanschluss zurückrufen.

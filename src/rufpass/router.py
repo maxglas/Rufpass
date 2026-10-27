@@ -18,6 +18,7 @@ class Snapshot:
 
 
 def select_book(root, name):
+    """Select exactly one named normal book; reject unexpected or ambiguous XML."""
     if root.tag not in ("phonebook", "phonebooks"):
         raise ValueError("Unerwartetes Telefonbuch-XML.")
     books = [root] if root.tag == "phonebook" else root.findall("phonebook")
@@ -35,6 +36,7 @@ class Router:
                                           password=config.password, timeout=10, redact_debug_log=True)
 
     def snapshot(self):
+        """Read all books for deduplication and UID-index the configured write target."""
         books = FritzPhonebook(fc=self.connection)
         contacts, known = {}, set()
         found = False
@@ -67,6 +69,7 @@ class Router:
         return Snapshot(contacts, known)
 
     def create(self, marker, number):
+        """Create one new contact and return its UID; callers reconcile uncertain replies."""
         contact = ET.Element("contact")
         ET.SubElement(contact, "category").text = "0"
         ET.SubElement(ET.SubElement(contact, "person"), "realName").text = marker
@@ -80,11 +83,13 @@ class Router:
         return int(raw_uid)
 
     def delete(self, uid):
+        """Delete this UID in the target book after the caller verifies ownership."""
         self.connection.call_action(SERVICE, "DeletePhonebookEntryUID",
                                     NewPhonebookID=self.config.phonebook_id,
                                     NewPhonebookEntryUniqueID=uid)
 
     def get(self, uid):
+        """Read one target contact; return None only for the router's missing-entry error."""
         try:
             result = self.connection.call_action(SERVICE, "GetPhonebookEntryUID",
                                                  NewPhonebookID=self.config.phonebook_id,

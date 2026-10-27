@@ -21,8 +21,8 @@ sind kein Nachweis für einen erfolgreichen GitHub-Actions-Lauf.
 
 ## Vor dem öffentlichen Schalten abschließen
 
-- [ ] Projektlizenz festlegen; vollständige `LICENSE` und Paketmetadaten ergänzen.
-  [MIT und Apache-2.0 im Vergleich](licensing.md).
+- [x] Projektlizenz Apache-2.0 mit Commons Clause v1.0 als `LICENSE` angelegt,
+  Paketmetadaten und Installer berücksichtigen sie. [Lizenz und Nutzung](licensing.md).
 - [ ] Git-Autoren-E-Mail bewusst öffentlich zulassen oder Historie vor der Freigabe
   kontrolliert bereinigen. Historie nicht ohne gesonderte Entscheidung umschreiben.
 - [ ] Ubuntu-Dienst einmal nach der [Betriebsanleitung](operations.md) installieren:
@@ -52,7 +52,8 @@ Ubuntu-Dienstempfehlung kann daraus noch nicht abgeleitet werden.
 - Nach der Veröffentlichung im eigenen Profil anheften und ein erstes als Vorabversion
   markiertes Release mit tatsächlich geprüfter Kompatibilität erstellen.
 - Eine kurze Demo mit synthetischen Nummern ist hilfreich, aber kein Freigabeblocker.
-  Badges erst ergänzen, wenn Lizenz und tatsächliche CI-Ergebnisse feststehen.
+  CI-Badges erst ergänzen, wenn tatsächliche CI-Ergebnisse feststehen; die Lizenz
+  stets mit ihrer Commons-Clause-Bedingung kennzeichnen.
 
 Ein Logo, eine Website, Docker und ein Windows-Dienst sind für die erste öffentliche
 Version nicht erforderlich. Priorität haben verständliche Installation, nachvollziehbarer

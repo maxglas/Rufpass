@@ -11,7 +11,8 @@ maßgeblich. Die früheren Einzeltests bleiben unter [Diagnose](diagnostics.md) 
 - Lesender Zugriff mit einem dedizierten Telefonie-Benutzer funktioniert.
 - Der Callmonitor meldet den Wählbeginn.
 - Ein gezielter Testkontakt lässt sich anlegen, zurücklesen und entfernen.
-- Ein externer Testkontakt bleibt mit `probe --keep` sichtbar gespeichert.
+- Ein externer Testkontakt wurde in der Entwicklungsphase sichtbar gespeichert.
+  Die damalige Schreibtest-Funktion ist aus dem aktuellen Produkt entfernt.
 - Die zwölf zusätzlichen internen Einträge im XML sind keine normalen Kontakte.
 
 ## Automatischer Betrieb

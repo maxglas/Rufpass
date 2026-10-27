@@ -48,7 +48,7 @@ release_dir="$(mktemp -d /opt/rufpass/releases/XXXXXX)"
 chmod 755 "$release_dir"
 python3 -m venv "$release_dir"
 install -d -m 755 "$release_dir/source"
-cp -R "$project_root/pyproject.toml" "$project_root/README.md" "$project_root/src" "$release_dir/source/"
+cp -R "$project_root/pyproject.toml" "$project_root/README.md" "$project_root/LICENSE" "$project_root/src" "$release_dir/source/"
 "$release_dir/bin/python" -m pip install "$release_dir/source"
 if [[ ! -f /etc/rufpass/config.toml ]]; then
   "$release_dir/bin/rufpass" configure
