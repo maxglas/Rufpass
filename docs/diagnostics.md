@@ -5,7 +5,11 @@ Beide Befehle verändern keine Einträge. Der getrennte Befehl `probe` führt ei
 kontrollierten Schreibtest durch. Der neue automatische Dienst wird nach der
 [Betriebsanleitung](operations.md) installiert. Diese Diagnosebefehle bleiben getrennt davon.
 
-## Installation
+## Optionale Diagnoseumgebung
+
+Diese separate Projekt-`.venv` ist nur für manuelle Diagnosebefehle nötig. Der
+Dienstinstaller verwendet seine eigene Umgebung unter `/opt/rufpass`. Zuerst die
+[Voraussetzungen](prerequisites.md) erfüllen.
 
 Die folgenden Befehle auf dem Ubuntu-Rechner im Heimnetz ausführen.
 Ein vorhandenes Checkout zuerst mit `git pull --ff-only` aktualisieren;
@@ -142,6 +146,10 @@ nicht als Sichttest eignen. `monitor` bleibt weiterhin rein lesend.
 | `monitor` | Zeigt Wählversuche an; legt keine Freigaben an. |
 | `probe` | Legt einen temporären Testkontakt an und entfernt ihn wieder. |
 | `probe --keep` | Lässt einen Testkontakt mit der lokal eingegebenen externen Nummer gespeichert. |
+| `run` | Verarbeitet Wählversuche und verwaltet eigene Freigaben; verwendet die Dienstkonfiguration. |
+| `validate` | Prüft die Dienstkonfiguration, Telefonbücher und Callmonitor lesend. |
+| `status` | Zeigt Zähler aus der lokalen Datenbank ohne Router-Zugriff. |
+| `configure` | Schreibt einmalig eine lokale Konfigurationsdatei; keine Router-Änderungen. |
 
 Nach `probe` ohne `--keep` ist das Zielbuch wieder leer, wenn es vorher leer war. Automatische Rückruf-Freigaben führt der neue Befehl `run` aus; siehe [Betrieb](operations.md).
 Die installierte Paketversion lässt sich mit `.venv/bin/rufpass --version` prüfen.
@@ -154,8 +162,8 @@ Die installierte Paketversion lässt sich mit `.venv/bin/rufpass --version` prü
 - Verbindung bricht ab: Die Bibliothek versucht kurz erneut zu verbinden; danach
   beendet Rufpass die Diagnose mit Fehlerstatus. Verpasste Wählereignisse sind verloren.
 
-Für die nächste Implementierung genügt das Ergebnis des Schreibtests. Bei Fehlern
-zusätzlich angeben, ob der Testkontakt zurückblieb und manuell entfernt wurde.
+Für den normalen Dienstbetrieb die [Betriebsanleitung](operations.md) verwenden. Bei Fehlern
+angeben, ob ein Testkontakt zurückblieb und manuell entfernt wurde.
 Kennwort und vollständige Telefonnummern bleiben lokal.
 
 ## Automatisierte Tests

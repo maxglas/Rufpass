@@ -1,10 +1,11 @@
 # Quellen und verifizierte Ausgangspunkte
 
-Recherche: 26.10.2026. Keine Validierung an der konkreten FRITZ!Box durchgeführt.
+Recherche: 26.10.2026. Den aktuellen, getrennt ausgewiesenen Stand von Geräte- und
+Simulationstests beschreibt der [Validierungsstand](setup.md).
 
 - [FRITZ!: Rufsperren, Modell 7690](https://fritz.com/apps/knowledge-base/FRITZ-Box-7690/142_rufsperren-fur-ankommende-und-ausgehende-anrufe-z-b-0900-nummern-einrichten)
   beschreibt die Regel „Nicht im Telefonbuch“. Das Verhalten mit einem zweiten Buch
-  wird vor Umsetzung ausdrücklich manuell getestet.
+  wurde an der Testbox manuell bestätigt.
 - [Home Assistant: FRITZ!Box Call Monitor](https://www.home-assistant.io/integrations/fritzbox_callmonitor/)
   dokumentiert Port 1012, Wählzustände und Aktivierung. Home Assistant ist keine Voraussetzung unseres Dienstes.
 - [FRITZ!: TR-064 Telefonie-Schnittstelle](https://fritz.support/resources/TR-064_Contact_SCPD.pdf)

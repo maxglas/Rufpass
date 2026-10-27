@@ -11,6 +11,11 @@ requires-python = ">=3.12"
 authors = [{name = "Maximilian Glas"}]
 dependencies = ["fritzconnection>=1.15.1,<2"]
 
+[project.urls]
+Repository = "https://github.com/maxglas/Rufpass"
+Documentation = "https://github.com/maxglas/Rufpass/blob/main/docs/operations.md"
+Issues = "https://github.com/maxglas/Rufpass/issues"
+
 [project.scripts]
 rufpass = "rufpass.cli:main"
 

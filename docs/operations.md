@@ -1,41 +1,118 @@
 # Rufpass auf Ubuntu betreiben
 
-## Installation und Updates
+## Voraussetzungen
 
-Im vertrauenswürdigen lokalen Checkout:
+Zuerst [FRITZ!Box und Ubuntu vorbereiten](prerequisites.md). Dazu gehören das
+zusätzliche lokale Telefonbuch, die passende Rufsperre, der FRITZ!Box-Benutzer,
+TR-064, der Callmonitor sowie die Systempakete `git`, `python3`, `python3-venv`
+und `ca-certificates`. Die Version von Python muss mindestens 3.12 sein.
+Diese Vorbereitung ist von der Installation unseres Codes getrennt.
+
+## Rufpass installieren
+
+### Quellcode bereitstellen
+
+Bei einer neuen Installation:
+
+```bash
+git clone https://github.com/maxglas/Rufpass.git
+cd Rufpass
+```
+
+Bei einem bestehenden Checkout stattdessen in dieses Verzeichnis wechseln und
+`git pull --ff-only` ausführen. Solange das Repository privat ist, sind GitHub-Anmeldedaten
+erforderlich, etwa SSH oder ein Zugriffstoken. Das normale GitHub-Kennwort funktioniert
+für Git über HTTPS nicht. Zugangsdaten nicht in die Repository-URL schreiben.
+
+### Installer starten
+
+Im lokalen Checkout:
+
+```bash
+sudo bash scripts/install.sh
+```
+
+Der Installer benötigt Administratorrechte für Systembenutzer, Installationsverzeichnisse
+und systemd. Er installiert keine Ubuntu-Pakete, führt kein `git pull` aus und benötigt
+selbst kein GitHub-Token. Fehlende Laufzeitvoraussetzungen werden vor der Einrichtung gemeldet.
+
+Bei der Ersteinrichtung folgende Angaben im Terminal eingeben:
+
+| Angabe | Vorgabe / Bedeutung |
+| --- | --- |
+| FRITZ!Box | `fritz.box`; alternativ LAN-IPv4-Adresse |
+| FRITZ!Box-Benutzer | `rufpass`; das Konto in der FRITZ!Box |
+| Telefonbuchname | `Rufpass`; exakt wie in der Oberfläche |
+| Telefonbuch-ID | `1`; bei abweichender ID den tatsächlichen Wert verwenden |
+| Landesvorwahl | `49`, ohne `+` oder `00` |
+| Ortsvorwahl | Eigene Ortsvorwahl, beispielsweise `030`; für die Speicherung wird die führende Null entfernt |
+| Gültigkeit | `365` Tage seit dem letzten eigenen Wählversuch |
+| Kennwort | FRITZ!Box-Kennwort dieses Benutzers; verdeckte Eingabe |
+
+Enter übernimmt eine angezeigte Vorgabe. Kennwort und tatsächliche Nummern bleiben
+im lokalen Terminal und gehören nicht in Issues oder Screenshots. Die standardmäßig
+aktive Wikidata-Suche wird weiter unten erläutert und ist abschaltbar.
+
+Der Installer führt danach ohne weitere Diagnose-Einzelschritte aus:
+
+1. Einen eigenen Linux-Benutzer `rufpass` und geschützte Daten-/Konfigurationsverzeichnisse anlegen.
+2. Eine neue Python-Umgebung unter `/opt/rufpass/releases/` erstellen und den lokalen
+   Rufpass-Code samt `fritzconnection` und dessen Abhängigkeiten per pip installieren.
+   Das System-Python und eine vorhandene Projekt-`.venv` erhalten keine Rufpass-Pakete.
+3. Die Konfiguration unter `/etc/rufpass/config.toml` speichern, falls sie noch nicht
+   existiert. Vorhandene Werte werden bei Updates nicht erneut abgefragt oder überschrieben.
+4. Alle Telefonbücher lesend prüfen und die TCP-Verbindung zum Callmonitor testen.
+   Dieser Schritt bestätigt keine Schreibrechte und legt keinen Testkontakt an.
+5. Den systemd-Dienst installieren, `/opt/rufpass/current` umschalten und Autostart aktivieren.
+6. Den Dienst starten und prüfen, ob systemd ihn als aktiv meldet. Ab dann werden neue
+   Wählversuche automatisch als Freigaben verarbeitet. Alte Anrufe werden nicht nachgetragen.
+
+Ein vorhandener Linux-Benutzer namens `rufpass` wird verwendet; vorab prüfen, dass
+dieser Name nicht anderweitig belegt ist. Es handelt sich nicht um den FRITZ!Box-Benutzer.
+Der Installer richtet keine Rufsperre und keine Router-Benutzerrechte ein.
+
+## Updates
+
+Im vorhandenen Checkout:
 
 ```bash
 git pull --ff-only
 sudo bash scripts/install.sh
 ```
 
-Der Installer benötigt Administratorrechte für Paketinstallation, Systembenutzer
-und systemd. Er führt nicht selbst `git pull` aus und benötigt kein GitHub-Token.
-Bei der ersten Installation werden Host, Telefonie-Benutzer, zusätzliches lokales
-Telefonbuch, Landes-/Ortsvorwahl und Gültigkeit abgefragt. Das Kennwort wird verdeckt
-eingegeben. Alle Zugangsdaten bleiben auf dem Server.
-
-Voreinstellung: `fritz.box`, Benutzer `rufpass`, Buch `Rufpass`, ID 1,
-Landesvorwahl 49 und 365 Tage Gültigkeit. Die Ortsvorwahl muss zur überwachten
-FRITZ!Box passen, damit lokale Wählziele korrekt zugeordnet werden.
-
-Der Installer erzeugt eine neue Python-Umgebung unter `/opt/rufpass/releases/`,
-prüft lesenden Telefonbuchzugriff und Erreichbarkeit des Callmonitors und schaltet
-anschließend `/opt/rufpass/current` auf diese Version. Bei Updates bleibt die bisherige
-Version während des Paketbaus aktiv. Anschließend wird der Dienst neu gestartet.
+Bei Updates bleibt die bisherige Version während des Paketbaus aktiv. Nach lesender
+Schnittstellenprüfung wird der Dienst auf die neue Umgebung umgeschaltet und neu gestartet.
 Bei einem sofort erkannten Startfehler wird, soweit vorhanden, die vorherige
-Programmversion wieder ausgewählt. Alte Umgebungen werden nicht automatisch gelöscht.
-
-Ein vorhandener Benutzer namens `rufpass` wird verwendet; auf einem gemeinsam
-verwalteten Server vorher prüfen, ob dieser Name bereits anderweitig belegt ist.
-Dieser Installer richtet keine Sperrregel ein und verändert keine Router-Benutzerrechte.
+Programmversion wieder ausgewählt. Das ist keine vollständige Wiederherstellung von
+Datenbank, Konfiguration oder Dienstdefinition. Alte Umgebungen werden nicht automatisch
+gelöscht. Die frühere Projekt-`.venv` wird durch den Dienstinstaller nicht aktualisiert.
 
 ## Erfolg prüfen
 
+Die vollständige Erstinstallation und der Dauerbetrieb sind am Gerät noch zu bestätigen.
+Die folgenden Prüfungen sind der noch offene End-to-End-Test.
+
 ```bash
 sudo systemctl status rufpass --no-pager
+sudo systemctl is-enabled rufpass
 sudo journalctl -u rufpass -n 30 --no-pager
 ```
+
+Erwartung: `active (running)`, `enabled` und die Logmeldung `Callmonitor verbunden`.
+Wiederkehrende Telefonbuchfehler müssen zuerst behoben werden; ein laufender Prozess
+allein bestätigt noch keine funktionierende Router-Verbindung.
+
+1. Über ein mit der FRITZ!Box verbundenes Telefon eine eigene externe Testnummer
+   wählen, die in keinem Telefonbuch steht. Gesprächsannahme ist nicht erforderlich.
+2. Den neuen Kontakt im zusätzlichen Telefonbuch prüfen und von der Testnummer zurückrufen.
+   Beim erneuten Wählen derselben Nummer darf kein zweiter Kontakt entstehen.
+3. `sudo systemctl restart rufpass` ausführen, Status/Logs erneut prüfen und die
+   Testnummer noch einmal wählen. Der bestehende Kontakt muss weiterverwendet werden.
+   Optional später einen Ubuntu-Neustart nutzen, um den tatsächlichen Autostart zu prüfen.
+
+Es gibt keine verpflichtende Folge von `check`, `monitor` und `probe`: Diese Befehle
+sind für die gezielte Fehlersuche gedacht. Die Ablaufbereinigung wird bisher durch
+Simulationen geprüft; eine echte 365-Tage-Laufzeit ist nicht bestätigt.
 
 Nach einem eigenen Wählversuch zu einer noch unbekannten normalen Nummer erscheint
 ein Kontakt `Rufpass JJJJ-MM-TT Name unbekannt` im zusätzlichen Telefonbuch. Weder
@@ -103,14 +180,25 @@ sudo systemctl restart rufpass
 
 `ttl_days` ist standardmäßig 365 und kann zwischen 1 und 365 liegen. Bereits
 gespeicherte Konfigurationen behalten ihren Wert; für ein Jahr dort `ttl_days = 365` setzen.
-Eine Änderung wirkt beim nächsten eigenen
-Wählversuch auf die betreffende Freigabe; vorhandene Ablaufzeiten werden nicht
+Eine Änderung wirkt beim nächsten eigenen Wählversuch auf die betreffende Freigabe; vorhandene Ablaufzeiten werden nicht
 pauschal umgeschrieben. Die Ortsvorwahl steht in `area_code` ohne führende 0, die
 Landesvorwahl in `country_code` ohne `+` oder `00`.
 
 Host, Telefonbuch-ID und -Name sind an die Datenbank gebunden. Ein anderer Zielrouter
 oder ein anderes Zielbuch benötigt eine separate Datenbank, damit bestehende
 Freigaben nicht versehentlich in einem anderen Buch bearbeitet werden.
+
+Alle Konfigurationsfelder entsprechen den oben abgefragten Angaben. Zusätzlich:
+
+| Schlüssel | Standard | Bedeutung |
+| --- | --- | --- |
+| `database` | `/var/lib/rufpass/state.sqlite3` | Lokale Freigaben; beim mitgelieferten Dienst im freigegebenen Zustandsverzeichnis belassen |
+| `reverse_lookup` | `true` | Neue unbekannte Nummern bei Wikidata suchen; `false` verhindert diese Übertragung |
+
+Eine neue Eingabe über `configure` ersetzt keine bestehende Datei. Änderungen daher
+mit `sudoedit` vornehmen und den Dienst anschließend neu starten. Eine andere
+Datenbank außerhalb von `/var/lib/rufpass` benötigt angepasste Verzeichnisrechte
+und eine passende Freigabe in der systemd-Dienstdefinition.
 
 ## Anhalten und lokaler Status
 

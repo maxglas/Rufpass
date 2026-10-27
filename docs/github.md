@@ -1,47 +1,59 @@
-# GitHub-Veröffentlichung vorbereiten
+# Öffentliche Veröffentlichung vorbereiten
 
-## Repository verbinden
+## Stand der Prüfung vom 27.10.2026
 
-Ein lokales Git-Repository kann nachträglich mit einem leeren GitHub-Repository
-verbunden werden. GitHub benötigt dafür keinen separaten neuen Projektstart.
+Der lokale Stand enthält README, getrennte Voraussetzungen, Erstinstallation,
+Updates, systemd-Betrieb, Diagnose, Architektur und Beitragsanleitung.
+Der Quellcode verwendet `fritzconnection` (MIT); Pakete werden regulär über pip
+installiert und nicht als kopierter Fremdcode in diesem Repository ausgeliefert.
 
-1. Auf GitHub ein Repository namens `Rufpass` erstellen, zunächst privat.
-2. Dabei keine README, `.gitignore` oder Lizenz automatisch erzeugen lassen:
-   Das lokale Projekt besitzt bereits einen Commit mit diesen Projektunterlagen.
-3. Im lokalen Projektverzeichnis die von GitHub angezeigte URL verbinden:
+Eine heuristische Prüfung von 95 historischen Git-Blobs fand keine Treffer für
+typische GitHub-Tokens, private Schlüssel, AWS-Zugriffsschlüssel sowie die geprüften
+privaten IP-/Benutzerpfadmuster. Dies ist kein vollständiger Geheimnisscan und keine
+Garantie, dass sämtliche personenbezogenen Daten ausgeschlossen sind.
+Die Git-Autorenhistorie enthält eine private E-Mail-Adresse; ihre Veröffentlichung
+muss vor einem Sichtbarkeitswechsel bewusst entschieden werden. Eine Änderung
+zukünftiger Git-Einstellungen ändert alte Commits nicht.
 
-```powershell
-git remote add origin https://github.com/maxglas/Rufpass.git
-git push -u origin main
-```
+GitHub-Sichtbarkeit, Actions-Ergebnisse, Branch-Regeln und private Sicherheitsmeldungen
+konnten mit dem verfügbaren Zugriff nicht verifiziert werden. Lokale Testresultate
+sind kein Nachweis für einen erfolgreichen GitHub-Actions-Lauf.
 
-Diese URL gilt, wenn das Repository tatsächlich unter `maxglas/Rufpass` erstellt
-wurde. Vorher die von GitHub angezeigte Zieladresse prüfen. Noch existiert kein
-bestätigtes Remote. Falls `origin` bereits existiert, zuerst `git remote -v` prüfen.
+## Vor dem öffentlichen Schalten abschließen
 
-Danach ist der normale Ablauf `git add`, `git commit`, `git push`.
-Ein zusätzliches Klonen in dasselbe Verzeichnis ist nicht erforderlich.
+- [ ] Projektlizenz festlegen; vollständige `LICENSE` und Paketmetadaten ergänzen.
+  [MIT und Apache-2.0 im Vergleich](licensing.md).
+- [ ] Git-Autoren-E-Mail bewusst öffentlich zulassen oder Historie vor der Freigabe
+  kontrolliert bereinigen. Historie nicht ohne gesonderte Entscheidung umschreiben.
+- [ ] Ubuntu-Dienst einmal nach der [Betriebsanleitung](operations.md) installieren:
+  Autostart aktiv, neue Freigabe sichtbar, Rückruf möglich, erneuter Anruf ohne Dublette.
+  Neustart des Dienstes prüfen und Ergebnis im [Validierungsstand](setup.md) festhalten.
+- [ ] Den tatsächlichen GitHub-Actions-Lauf des zu veröffentlichenden Commits prüfen.
+  Der Workflow liegt unter `.github/workflows/tests.yml`.
+- [ ] Vorbereitete Änderungen bewusst pushen; Agenten pushen nur auf ausdrücklichen Auftrag.
+- [ ] Auf GitHub **Private vulnerability reporting** einschalten, damit der Meldeweg
+  aus [SECURITY.md](../SECURITY.md) funktioniert.
+- [ ] Die zu veröffentlichende Historie abschließend auf vertrauliche Daten prüfen,
+  einschließlich eventueller späterer Commits, Anhänge und Branches.
+- [ ] Erst danach die Sichtbarkeit in den Repository-Einstellungen ändern. Diese
+  Anleitung führt keinen Push und keinen Sichtbarkeitswechsel aus.
 
-Quelle: [GitHub: Adding locally hosted code](https://docs.github.com/en/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github).
+Die noch offene Geräteprüfung verhindert nicht technisch ein öffentliches Repository.
+Bis zu ihrem Abschluss muss der frühe Teststand aber sichtbar bleiben; eine belastbare
+Ubuntu-Dienstempfehlung kann daraus noch nicht abgeleitet werden.
 
-## Präsentation
+## Präsentation auf GitHub
 
-- Name: **Rufpass**
-- Kurzbeschreibung: **Wer von dir angerufen wird, darf zurückrufen. Automatische Rückruf-Freigaben für die FRITZ!Box.**
-- Vorgeschlagene Topics: `fritzbox`, `telephony`, `call-monitor`, `tr-064`, `python`, `self-hosted`.
+- Name: **Rufpass**.
+- Kurzbeschreibung: **Wer von dir angerufen wird, darf zurückrufen. Automatische
+  Rückruf-Freigaben für die FRITZ!Box.**
+- Topics: `fritzbox`, `telephony`, `call-monitor`, `tr-064`, `python`, `self-hosted`.
 - Autor: [Maximilian Glas](https://github.com/maxglas).
-- README mit Problem, Ablauf, verständlicher Grafik, Entwicklungsstand und Dokumentationslinks.
-- Badges erst für tatsächlich vorhandene Tests, Releases und Lizenz hinzufügen.
-- Später eine kurze Demo mit synthetischen Daten und ein nachvollziehbares erstes Release ergänzen.
+- Nach der Veröffentlichung im eigenen Profil anheften und ein erstes als Vorabversion
+  markiertes Release mit tatsächlich geprüfter Kompatibilität erstellen.
+- Eine kurze Demo mit synthetischen Nummern ist hilfreich, aber kein Freigabeblocker.
+  Badges erst ergänzen, wenn Lizenz und tatsächliche CI-Ergebnisse feststehen.
 
-## Vor dem öffentlichen Schalten
-
-- Lizenz bewusst auswählen und als `LICENSE` ergänzen.
-- Gerätetests durchführen und tatsächliche Kompatibilität dokumentieren.
-- Gesamte zur Veröffentlichung vorgesehene Git-Historie auf Zugangsdaten,
-  echte Telefonnummern und private Infrastrukturangaben prüfen.
-- Git-Autorenangaben prüfen; bei Bedarf vor dem Push eine GitHub-No-Reply-Adresse verwenden.
-- Bei Veröffentlichung das Repository optional im eigenen GitHub-Profil anheften.
-
-Das Repository soll erst später öffentlich werden. Dieses Dokument führt weder
-einen Push noch eine Änderung der Sichtbarkeit aus.
+Ein Logo, eine Website, Docker und ein Windows-Dienst sind für die erste öffentliche
+Version nicht erforderlich. Priorität haben verständliche Installation, nachvollziehbarer
+Teststand und sichere Handhabung von Zugangsdaten.

@@ -22,6 +22,11 @@ erst ein tatsächlicher Workflow-Lauf bestätigt dessen Ergebnis.
 manuelle Kontakte prüfen. Niemals Buch-Import oder Buch-Wiederherstellung als
 Abkürzung für Einzeländerungen verwenden.
 
+## Sicherheitsprobleme
+
+Vertrauliche Schwachstellen nach [SECURITY.md](SECURITY.md) melden, nicht mit
+Zugangsdaten oder echten Anrufdaten in einem öffentlichen Issue.
+
 ## Fehler melden
 
 Modell, FRITZ!OS-Version, Rufpass-Version, Betriebssystem und reproduzierbare Schritte

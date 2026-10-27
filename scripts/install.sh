@@ -8,8 +8,8 @@ if [[ "${EUID}" -ne 0 ]]; then
 fi
 
 project_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-if ! command -v systemctl >/dev/null || ! command -v apt-get >/dev/null; then
-  echo "Dieser Installer ist für Ubuntu/Debian mit systemd vorgesehen." >&2
+if ! command -v systemctl >/dev/null || ! command -v python3 >/dev/null; then
+  echo "Ubuntu mit systemd und Python 3.12 oder neuer erforderlich. Siehe docs/prerequisites.md." >&2
   exit 1
 fi
 if [[ -e /opt/rufpass/current && ! -L /opt/rufpass/current ]]; then
@@ -31,9 +31,11 @@ recover() {
 }
 trap recover ERR
 
-apt-get update
-apt-get install -y python3-venv
 python3 -c 'import sys; assert sys.version_info >= (3, 12), "Python 3.12 oder neuer erforderlich"'
+if ! python3 -c 'import venv, ensurepip' >/dev/null 2>&1; then
+  echo "Python-venv fehlt. Zuerst sudo apt install python3-venv ausführen." >&2
+  exit 1
+fi
 if ! id -u rufpass >/dev/null 2>&1; then
   useradd --system --user-group --home-dir /var/lib/rufpass --shell /usr/sbin/nologin rufpass
 fi
